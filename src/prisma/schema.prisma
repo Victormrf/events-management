@@ -1,0 +1,95 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Representa os usuários
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  events    Event[]
+  orders    Order[]
+}
+
+// Representa os eventos
+model Event {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  date        DateTime
+  location    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  creator   User     @relation(fields: [creatorId], references: [id])
+  creatorId String
+
+  tickets Ticket[]
+}
+
+// Representa os tipos de ingressos para um evento (gratuitos ou pagos)
+model Ticket {
+  id         String @id @default(uuid())
+  name       String
+  price      Float
+  quantity   Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  event   Event  @relation(fields: [eventId], references: [id])
+  eventId String
+
+  orderItems OrderItem[]
+}
+
+// Representa a transação de aquisição de ingressos
+model Order {
+  id          String   @id @default(uuid())
+  totalAmount Float
+  status      OrderStatus @default(CONFIRMED)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  orderItems OrderItem[]
+}
+
+// Item de uma ordem, relacionando a ordem ao ingresso
+model OrderItem {
+  id             String @id @default(uuid())
+  quantity       Int
+  priceAtAcquisition Float
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  order   Order  @relation(fields: [orderId], references: [id])
+  orderId String
+
+  ticket  Ticket @relation(fields: [ticketId], references: [id])
+  ticketId String
+}
+
+// Enums para tipos de dados com valores fixos
+enum Role {
+  ADMIN
+  USER
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
