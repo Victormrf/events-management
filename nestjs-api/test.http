@@ -1,0 +1,23 @@
+###
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+    "name": "Victor Admin",
+    "email": "vmrf2000@hotmail.com",
+    "password": "test1234",
+    "role": "ADMIN"
+}
+
+###
+# @name loginUser
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "vmrf2000@hotmail.com",
+    "password": "test1234"
+}
+###
+@jwt_token = {{loginUser.response.body.access_token}}
+
