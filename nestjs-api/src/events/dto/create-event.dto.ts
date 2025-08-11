@@ -1,5 +1,6 @@
 import {
   IsDateString,
+  IsDecimal,
   IsInt,
   IsNotEmpty,
   IsOptional,
@@ -26,4 +27,14 @@ export class CreateEventDto {
   @IsOptional()
   @Min(1)
   maxAttendees?: number;
+
+  @IsOptional()
+  @IsDecimal(
+    { decimal_digits: '2' },
+    {
+      message: 'Preço deve ser um número decimal com até duas casas decimais.',
+    },
+  )
+  @Min(0, { message: 'Preço não pode ser negativo.' })
+  price?: number;
 }

@@ -1,10 +1,9 @@
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -12,7 +11,7 @@ datasource db {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  name      String?
+  name      String
   password  String
   role      Role     @default(USER)
   createdAt DateTime @default(now())
@@ -24,40 +23,27 @@ model User {
 
 // Representa os eventos
 model Event {
-  id            String   @id @default(uuid())
-  title         String
-  description   String   @db.Text
-  date          DateTime
-  location      String
-  maxAttendees  Int?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  date        DateTime
+  location    String
+  maxAttendees Int?
+  price       Decimal  @default(0.00) @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   creator   User     @relation(fields: [creatorId], references: [id])
   creatorId String
 
-  tickets Ticket[]
-}
-
-// Representa os tipos de ingressos para um evento (gratuitos ou pagos)
-model Ticket {
-  id         String @id @default(uuid())
-  name       String
-  price      Float
-  quantity   Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  event   Event  @relation(fields: [eventId], references: [id])
-  eventId String
-
-  orderItems OrderItem[]
+  orders Order[]
 }
 
 // Representa a transação de aquisição de ingressos
 model Order {
   id          String   @id @default(uuid())
   totalAmount Float
+  quantity    Int
   status      OrderStatus @default(CONFIRMED)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -65,22 +51,24 @@ model Order {
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
-  orderItems OrderItem[]
+  event Event @relation(fields: [eventId], references: [id])
+  eventId String
+
+  attendees Attendee[]
 }
 
-// Item de uma ordem, relacionando a ordem ao ingresso
-model OrderItem {
-  id             String @id @default(uuid())
-  quantity       Int
-  priceAtAcquisition Float
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+// Representa cada participante individual inscrito em um evento
+model Attendee {
+  id         String   @id @default(uuid())
+  name       String
+  email      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
-  order   Order  @relation(fields: [orderId], references: [id])
+  order   Order @relation(fields: [orderId], references: [id])
   orderId String
 
-  ticket  Ticket @relation(fields: [ticketId], references: [id])
-  ticketId String
+  @@unique([orderId, id]) // O ID do participante é único para cada ordem
 }
 
 // Enums para tipos de dados com valores fixos
