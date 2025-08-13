@@ -21,3 +21,15 @@ Content-Type: application/json
 ###
 @jwt_token = {{loginUser.response.body.access_token}}
 
+###
+POST http://localhost:3000/events
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+    "title": "Test event",
+    "description": "This is a test event",
+    "date": "2025-10-01T10:00:00Z",
+    "location": "Test Location",
+    "maxAttendees": 20
+}
