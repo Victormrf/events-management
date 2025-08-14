@@ -2,11 +2,9 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsEmail,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
-  Min,
   ValidateNested,
 } from 'class-validator';
 
@@ -21,10 +19,6 @@ export class AttendeeDetailDto {
 }
 
 export class CreateOrderDto {
-  @IsInt()
-  @Min(1)
-  quantity: number;
-
   @IsString()
   @IsNotEmpty()
   eventId: string;

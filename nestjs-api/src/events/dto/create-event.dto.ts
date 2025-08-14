@@ -1,12 +1,25 @@
 import {
   IsDateString,
-  IsDecimal,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Min,
+  Validate,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
 } from 'class-validator';
+
+@ValidatorConstraint({ name: 'twoDecimals', async: false })
+export class TwoDecimalsConstraint implements ValidatorConstraintInterface {
+  validate(value: number) {
+    return /^\d+(\.\d{1,2})?$/.test(value.toString());
+  }
+  defaultMessage() {
+    return 'Preço deve ter no máximo duas casas decimais.';
+  }
+}
 
 export class CreateEventDto {
   @IsString()
@@ -29,12 +42,8 @@ export class CreateEventDto {
   maxAttendees?: number;
 
   @IsOptional()
-  @IsDecimal(
-    { decimal_digits: '2' },
-    {
-      message: 'Preço deve ser um número decimal com até duas casas decimais.',
-    },
-  )
+  @IsNumber({}, { message: 'Preço deve ser um número.' })
   @Min(0, { message: 'Preço não pode ser negativo.' })
+  @Validate(TwoDecimalsConstraint)
   price?: number;
 }

@@ -22,6 +22,7 @@ Content-Type: application/json
 @jwt_token = {{loginUser.response.body.access_token}}
 
 ###
+# @name createEvent
 POST http://localhost:3000/events
 Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
@@ -31,5 +32,57 @@ Content-Type: application/json
     "description": "This is a test event",
     "date": "2025-10-01T10:00:00Z",
     "location": "Test Location",
-    "maxAttendees": 20
+    "maxAttendees": 20,
+    "price": 15.00
 }
+
+###
+@event_id = {{createEvent.response.body.id}}
+
+###
+GET http://localhost:3000/events
+Authorization: Bearer {{jwt_token}}
+
+###
+GET http://localhost:3000/events/{{event_id}}
+Authorization: Bearer {{jwt_token}}
+
+###
+PATCH  http://localhost:3000/events/{{event_id}}       
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+  "description": "This is a new test event",
+  "price": 20.60
+}
+
+###
+DELETE http://localhost:3000/events/{{event_id}}
+Authorization: Bearer {{jwt_token}}
+
+###
+POST http://localhost:3000/orders
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+    "eventId": "{{event_id}}",
+    "attendees": [
+        {
+            "name": "Fulano",
+            "email": "email.teste.1@email.com"
+        },
+        {
+            "name": "Ciclano",
+            "email": "email.teste.2@email.com"
+        }
+    ]
+
+}
+
+###
+GET http://localhost:3000/events/{{event_id}}/attendess
+Authorization: Bearer {{jwt_token}}
+
+

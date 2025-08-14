@@ -14,7 +14,7 @@ export class EventsService {
         ...data,
         date: new Date(data.date),
         maxAttendees: data.maxAttendees,
-        price: data.price || 0.0,
+        price: data.price !== undefined ? data.price.toFixed(2) : '0.00',
         creator: {
           connect: { id: creatorId },
         },
@@ -23,15 +23,25 @@ export class EventsService {
   }
 
   async findAll() {
-    return this.prisma.event.findMany({
+    const events = await this.prisma.event.findMany({
       orderBy: { date: 'asc' },
     });
+
+    if (!events) {
+      throw new NotFoundException('Nenhum evento encontrado');
+    }
+
+    return events;
   }
 
   async findById(id: string) {
-    return this.prisma.event.findUnique({
+    const event = await this.prisma.event.findUnique({
       where: { id },
     });
+    if (!event) {
+      throw new NotFoundException('Evento não encontrado');
+    }
+    return event;
   }
 
   async findAttendeesByEvent(id: string): Promise<Attendee[]> {
@@ -50,15 +60,23 @@ export class EventsService {
       throw new NotFoundException('Evento não encontrado');
     }
 
+    if (eventWithAttendees.orders.length === 0) {
+      throw new NotFoundException(
+        'Nenhum participante encontrado para este evento',
+      );
+    }
+
     return eventWithAttendees.orders.flatMap((order) => order.attendees);
   }
 
   async update(id: string, data: UpdateEventDto) {
+    console.log('Update data:', data);
     return this.prisma.event.update({
       where: { id },
       data: {
         ...data,
         date: data.date ? new Date(data.date) : undefined,
+        price: data.price !== undefined ? data.price.toFixed(2) : undefined,
       },
     });
   }

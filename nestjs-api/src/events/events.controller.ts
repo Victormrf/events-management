@@ -4,8 +4,8 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
-  Put,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -35,9 +35,15 @@ export class EventsController {
     return this.eventsService.findById(id);
   }
 
-  @Put(':id')
+  @Get(':id/attendess')
+  findAttendeesByEvent(@Param('id') id: string) {
+    return this.eventsService.findAttendeesByEvent(id);
+  }
+
+  @Patch(':id')
   @UseGuards(OwnerGuard)
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
+    console.log('Controller DTO:', updateEventDto);
     return this.eventsService.update(id, updateEventDto);
   }
 

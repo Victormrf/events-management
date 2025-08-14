@@ -52,6 +52,13 @@ export class OrdersService {
     const eventPrice = new Prisma.Decimal(event.price.toString());
     const totalAmount = eventPrice.times(new Prisma.Decimal(quantity));
 
+    console.log({
+      user: userId,
+      event: eventId,
+      totalAmount: totalAmount.toNumber(),
+      quantity,
+    });
+
     // cria order
     const order = await this.prisma.order.create({
       data: {
