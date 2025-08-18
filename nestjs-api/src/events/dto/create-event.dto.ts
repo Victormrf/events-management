@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsInt,
@@ -7,9 +8,11 @@ import {
   IsString,
   Min,
   Validate,
+  ValidateNested,
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
+import { CreateAddressDto } from './create-address.dto';
 
 @ValidatorConstraint({ name: 'twoDecimals', async: false })
 export class TwoDecimalsConstraint implements ValidatorConstraintInterface {
@@ -33,9 +36,6 @@ export class CreateEventDto {
   @IsDateString()
   date: string;
 
-  @IsString()
-  location: string;
-
   @IsInt()
   @IsOptional()
   @Min(1)
@@ -46,4 +46,8 @@ export class CreateEventDto {
   @Min(0, { message: 'Preço não pode ser negativo.' })
   @Validate(TwoDecimalsConstraint)
   price?: number;
+
+  @ValidateNested()
+  @Type(() => CreateAddressDto)
+  address: CreateAddressDto;
 }

@@ -27,7 +27,6 @@ model Event {
   title       String
   description String   @db.Text
   date        DateTime
-  location    String
   maxAttendees Int?
   price       Decimal  @default(0.00) @db.Decimal(10, 2)
   createdAt   DateTime @default(now())
@@ -36,7 +35,25 @@ model Event {
   creator   User     @relation(fields: [creatorId], references: [id])
   creatorId String
 
+  address Address @relation(fields: [addressId], references: [id])
+  addressId String @unique // Chave estrangeira para o endereço
+
   orders Order[]
+}
+
+// Representa o endereço de um evento
+model Address {
+  id           String   @id @default(uuid())
+  street       String
+  neighborhood String?
+  city         String
+  state        String
+  country      String
+  zipCode      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  event Event?
 }
 
 // Representa a transação de aquisição de ingressos

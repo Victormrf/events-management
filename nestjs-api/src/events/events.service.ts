@@ -18,6 +18,9 @@ export class EventsService {
         creator: {
           connect: { id: creatorId },
         },
+        address: {
+          create: data.address, // Cria o endereço junto com o evento
+        },
       },
     });
   }
@@ -77,6 +80,11 @@ export class EventsService {
         ...data,
         date: data.date ? new Date(data.date) : undefined,
         price: data.price !== undefined ? data.price.toFixed(2) : undefined,
+        ...(data.address && {
+          address: {
+            update: data.address,
+          },
+        }),
       },
     });
   }
