@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AttendeeDetailDto } from './dto/create-order.dto';
@@ -84,5 +85,37 @@ export class OrdersService {
       orderId: order.id,
       registeredAttendees: quantity,
     };
+  }
+
+  async cancelOrder(userId: string, eventId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        userId: userId,
+        eventId: eventId,
+      },
+      include: {
+        event: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        'Inscrição não encontrada para este usuário e evento.',
+      );
+    }
+
+    if (new Date(order.event.date) < new Date()) {
+      throw new BadRequestException(
+        'Não é possível cancelar uma inscrição para um evento que já ocorreu.',
+      );
+    }
+
+    await this.prisma.order.delete({
+      where: {
+        id: order.id,
+      },
+    });
+
+    return { message: 'Inscrição cancelada com sucesso.' };
   }
 }
