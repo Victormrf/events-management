@@ -31,9 +31,16 @@ Content-Type: application/json
     "title": "Test event",
     "description": "This is a test event",
     "date": "2025-10-01T10:00:00Z",
-    "location": "Test Location",
     "maxAttendees": 20,
-    "price": 15.00
+    "price": 15.00,
+    "address": {
+        "street": "street test",
+        "neighborhood": "neighborhood test",
+        "city": "city test",
+        "state": "state test",
+        "country": "country test",
+        "zipCode": "12345-678"
+    }
 }
 
 ###
@@ -80,6 +87,10 @@ Content-Type: application/json
     ]
 
 }
+
+###
+DELETE http://localhost:3000/orders/{{event_id}}
+Authorization: Bearer {{jwt_token}}
 
 ###
 GET http://localhost:3000/events/{{event_id}}/attendess

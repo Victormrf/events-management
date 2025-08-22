@@ -1,8 +1,9 @@
+import { getEvents } from "@/service/events.service";
 import { Event } from "@/types/event";
 import { useEffect, useState } from "react";
 
 export function useEvents() {
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -10,20 +11,7 @@ export function useEvents() {
     const fetchEvents = async () => {
       try {
         setLoading(true);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/events`
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch events");
-        }
-
-        const data = await response.json();
-
-        const upcomingEvents = data.filter(
-          (event: Event) => new Date(event.date) > new Date()
-        );
-
+        const upcomingEvents = await getEvents();
         setEvents(upcomingEvents);
       } catch (err) {
         if (err instanceof Error) {
