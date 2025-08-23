@@ -1,51 +1,45 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Users, User, ChevronDown, ChevronUp } from "lucide-react"
-import { format } from "date-fns"
+import { useState } from "react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  User,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { format } from "date-fns";
+import { Event } from "@/types/event";
 
-interface EventCardProps {
-  event: {
-    id: string
-    title: string
-    description: string
-    date: Date
-    maxAttendees: number | null
-    price: number
-    createdAt: Date
-    address: {
-      street: string
-      neighborhood: string | null
-      city: string
-      state: string
-      country: string
-      zipCode: string | null
-    }
-    creator: {
-      name: string
-      email: string
-    }
-  }
-}
+type EventCardProps = {
+  event: Event;
+};
 
 export function EventCard({ event }: EventCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const formatPrice = (price: number) => {
-    return price === 0 ? "Free" : `$${price.toFixed(2)}`
-  }
+    return price === 0 ? "Free" : `$${price.toFixed(2)}`;
+  };
 
   const formatAddress = (address: typeof event.address) => {
-    return `${address.city}, ${address.state}`
-  }
+    return `${address.city}, ${address.state}`;
+  };
 
   const formatFullAddress = (address: typeof event.address) => {
-    const parts = [address.street, address.neighborhood, address.city, address.state, address.zipCode].filter(Boolean)
-    return parts.join(", ")
-  }
+    const parts = [
+      address.street,
+      address.neighborhood,
+      address.city,
+      address.state,
+      address.zipCode,
+    ].filter(Boolean);
+    return parts.join(", ");
+  };
 
   return (
     <Card
@@ -57,7 +51,11 @@ export function EventCard({ event }: EventCardProps) {
           <h3 className="font-semibold text-lg group-hover:text-primary transition-colors line-clamp-2">
             {event.title}
           </h3>
-          <Badge variant={event.price === 0 ? "secondary" : "default"}>{formatPrice(event.price)}</Badge>
+          <Badge
+            variant={parseFloat(event.price) === 0 ? "secondary" : "default"}
+          >
+            {formatPrice(parseFloat(event.price))}
+          </Badge>
         </div>
 
         <div className="space-y-2 text-sm text-muted-foreground">
@@ -83,7 +81,9 @@ export function EventCard({ event }: EventCardProps) {
 
       <CardContent className="space-y-4">
         {/* Always visible description preview */}
-        <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>
+        <p className="text-sm text-muted-foreground line-clamp-2">
+          {event.description}
+        </p>
 
         {/* Expanded content */}
         {isExpanded && (
@@ -91,13 +91,17 @@ export function EventCard({ event }: EventCardProps) {
             {/* Full description */}
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Full Description</h4>
-              <p className="text-sm text-muted-foreground">{event.description}</p>
+              <p className="text-sm text-muted-foreground">
+                {event.description}
+              </p>
             </div>
 
             {/* Full address */}
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Location</h4>
-              <p className="text-sm text-muted-foreground">{formatFullAddress(event.address)}</p>
+              <p className="text-sm text-muted-foreground">
+                {formatFullAddress(event.address)}
+              </p>
             </div>
 
             {/* Event creator */}
@@ -113,12 +117,16 @@ export function EventCard({ event }: EventCardProps) {
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="font-medium">Created:</span>
-                <p className="text-muted-foreground">{format(event.createdAt, "PP")}</p>
+                <p className="text-muted-foreground">
+                  {format(event.createdAt, "PP")}
+                </p>
               </div>
               {event.maxAttendees && (
                 <div>
                   <span className="font-medium">Capacity:</span>
-                  <p className="text-muted-foreground">{event.maxAttendees} people</p>
+                  <p className="text-muted-foreground">
+                    {event.maxAttendees} people
+                  </p>
                 </div>
               )}
             </div>
@@ -139,10 +147,14 @@ export function EventCard({ event }: EventCardProps) {
         <div className="flex items-center justify-center pt-2 border-t">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <span>{isExpanded ? "Show less" : "Show more"}</span>
-            {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+            {isExpanded ? (
+              <ChevronUp className="h-3 w-3" />
+            ) : (
+              <ChevronDown className="h-3 w-3" />
+            )}
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
