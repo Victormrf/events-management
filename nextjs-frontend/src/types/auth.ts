@@ -6,6 +6,7 @@ export interface LoginResponse {
 
 export interface DecodedToken {
   email: string;
+  name: string;
   sub: string;
   role: string;
   exp: number;
@@ -14,7 +15,29 @@ export interface DecodedToken {
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (token: string) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
   getToken: () => string | null;
 }
+
+export type RegisterPayload = {
+  name: string;
+  email: string;
+  password: string;
+  role?: string;
+};
+
+export type LoginPayload = {
+  email: string;
+  password: string;
+};
+
+export type AuthResponse = {
+  token: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+};

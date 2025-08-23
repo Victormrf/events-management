@@ -1,14 +1,17 @@
-import { AuthContextType, DecodedToken } from "@/types/auth";
-import { User } from "@/types/user";
+"use client";
+
+import type React from "react";
 import {
+  useState,
   createContext,
-  useCallback,
   useContext,
   useEffect,
+  useCallback,
   useMemo,
-  useState,
 } from "react";
 import { Navigate } from "react-router-dom";
+import { AuthContextType } from "@/types/auth";
+import { User } from "@/types/user";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -17,18 +20,6 @@ const AUTH_TOKEN_KEY = "auth-token";
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  const decodeToken = useCallback((token: string): DecodedToken | null => {
-    try {
-      // Nota: Em uma aplicação real, você usaria uma biblioteca como 'jwt-decode'
-      // para decodificar o token e obter as informações do usuário.
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return payload;
-    } catch (e) {
-      console.error("Falha ao decodificar o token:", e);
-      return null;
-    }
-  }, []);
 
   const getToken = useCallback(() => {
     return localStorage.getItem(AUTH_TOKEN_KEY);
@@ -40,36 +31,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
   }, []);
 
-  const login = useCallback(
-    (token: string) => {
-      localStorage.setItem(AUTH_TOKEN_KEY, token);
-      const decoded = decodeToken(token);
-      if (decoded) {
-        setUser({
-          id: decoded.sub,
-          email: decoded.email,
-          name: "Usuário",
-          role: decoded.role,
-        });
-        setIsAuthenticated(true);
-      } else {
-        logout();
-      }
-    },
-    [decodeToken, logout]
-  );
+  // Agora, a função login recebe o token E os dados do usuário
+  const login = useCallback((token: string, userData: User) => {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+    setUser(userData);
+    setIsAuthenticated(true);
+  }, []);
+
+  // Função para decodificar o token para RESTAURAR a sessão
+  const decodeAndRestoreSession = useCallback((token: string) => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return {
+        id: payload.sub,
+        email: payload.email,
+        name: payload.name,
+        role: payload.role,
+      } as User;
+    } catch (e) {
+      console.error("Falha ao decodificar o token para restaurar a sessão:", e);
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     const token = getToken();
     if (token) {
-      const decoded = decodeToken(token);
-      if (decoded && decoded.exp * 1000 > Date.now()) {
-        login(token); // Tenta logar automaticamente se o token for válido
+      const userData = decodeAndRestoreSession(token);
+      if (userData) {
+        // Usa a função login para setar o estado, mas sem precisar decodificar novamente
+        login(token, userData);
       } else {
         logout();
       }
     }
-  }, [getToken, decodeToken, login, logout]);
+  }, [getToken, decodeAndRestoreSession, login, logout]);
 
   const authContextValue = useMemo(
     () => ({

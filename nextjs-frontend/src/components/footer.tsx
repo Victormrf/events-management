@@ -1,4 +1,5 @@
-import { Calendar, Github, Twitter, Mail } from "lucide-react"
+import { Calendar, Github, Twitter, Mail } from "lucide-react";
+import Link from "next/link";
 
 export function Footer() {
   return (
@@ -11,7 +12,9 @@ export function Footer() {
               <Calendar className="h-5 w-5 text-primary" />
               <span className="font-bold">Events Manager</span>
             </div>
-            <p className="text-sm text-muted-foreground">Discover and manage amazing events in your area.</p>
+            <p className="text-sm text-muted-foreground">
+              Discover and manage amazing events in your area.
+            </p>
           </div>
 
           {/* Quick Links */}
@@ -19,19 +22,28 @@ export function Footer() {
             <h4 className="font-semibold">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Browse Events
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/create-event"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Create Event
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <Link
+                  href="/my-events"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   My Dashboard
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -41,17 +53,26 @@ export function Footer() {
             <h4 className="font-semibold">Support</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Help Center
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Contact Us
                 </a>
               </li>
               <li>
-                <a href="#" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a
+                  href="#"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
+                >
                   Privacy Policy
                 </a>
               </li>
@@ -62,13 +83,22 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="font-semibold">Connect</h4>
             <div className="flex gap-2">
-              <a href="#" className="p-2 rounded-md bg-background hover:bg-accent transition-colors">
+              <a
+                href="#"
+                className="p-2 rounded-md bg-background hover:bg-accent transition-colors"
+              >
                 <Twitter className="h-4 w-4" />
               </a>
-              <a href="#" className="p-2 rounded-md bg-background hover:bg-accent transition-colors">
+              <a
+                href="#"
+                className="p-2 rounded-md bg-background hover:bg-accent transition-colors"
+              >
                 <Github className="h-4 w-4" />
               </a>
-              <a href="#" className="p-2 rounded-md bg-background hover:bg-accent transition-colors">
+              <a
+                href="#"
+                className="p-2 rounded-md bg-background hover:bg-accent transition-colors"
+              >
                 <Mail className="h-4 w-4" />
               </a>
             </div>
@@ -76,9 +106,9 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; 2024 Events Manager. All rights reserved.</p>
+          <p>&copy; 2025 Victor Fernandes. All rights reserved.</p>
         </div>
       </div>
     </footer>
-  )
+  );
 }

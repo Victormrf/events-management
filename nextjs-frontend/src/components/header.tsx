@@ -1,5 +1,6 @@
-import { Calendar, Menu, Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Calendar, Menu, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function Header() {
   return (
@@ -7,22 +8,31 @@ export function Header() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           {/* Logo and brand */}
-          <div className="flex items-center gap-2">
+          <Link href="/" className="flex items-center gap-2">
             <Calendar className="h-6 w-6 text-primary" />
             <span className="text-xl font-bold">Events Manager</span>
-          </div>
+          </Link>
 
           {/* Desktop navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link
+              href="/"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               Events
-            </a>
-            <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
+            </Link>
+            <Link
+              href="/create-event"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               Create Event
-            </a>
-            <a href="#" className="text-sm font-medium hover:text-primary transition-colors">
+            </Link>
+            <Link
+              href="/my-events"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
               My Events
-            </a>
+            </Link>
           </nav>
 
           {/* Actions */}
@@ -42,5 +52,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
