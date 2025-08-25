@@ -3,6 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -53,5 +54,20 @@ export class AuthService {
 
     const { password, ...result } = newUser;
     return result;
+  }
+
+  async findById(id: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      select: {
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('Evento não encontrado');
+    }
+    return user;
   }
 }

@@ -22,6 +22,10 @@ Content-Type: application/json
 @jwt_token = {{loginUser.response.body.access_token}}
 
 ###
+GET http://localhost:3000/auth/me
+Authorization: Bearer {{jwt_token}}
+
+###
 # @name createEvent
 POST http://localhost:3000/events
 Authorization: Bearer {{jwt_token}}

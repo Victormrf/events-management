@@ -16,11 +16,11 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { OwnerGuard } from 'src/guards/owner.guard';
 
 @Controller('events')
-@UseGuards(JwtAuthGuard)
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() createEventDto: CreateEventDto, @Request() req) {
     return this.eventsService.create(createEventDto, req.user.id);
   }
@@ -36,11 +36,13 @@ export class EventsController {
   }
 
   @Get(':id/attendess')
+  @UseGuards(JwtAuthGuard)
   findAttendeesByEvent(@Param('id') id: string) {
     return this.eventsService.findAttendeesByEvent(id);
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   @UseGuards(OwnerGuard)
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     console.log('Controller DTO:', updateEventDto);
@@ -48,6 +50,7 @@ export class EventsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   @UseGuards(OwnerGuard)
   delete(@Param('id') id: string) {
     return this.eventsService.delete(id);

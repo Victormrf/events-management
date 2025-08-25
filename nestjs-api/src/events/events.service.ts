@@ -28,6 +28,19 @@ export class EventsService {
   async findAll() {
     const events = await this.prisma.event.findMany({
       orderBy: { date: 'asc' },
+      include: {
+        address: {
+          select: {
+            street: true,
+            neighborhood: true,
+            city: true,
+            state: true,
+            country: true,
+            zipCode: true,
+          },
+        },
+        creator: { select: { name: true, email: true } },
+      },
     });
 
     if (!events) {
