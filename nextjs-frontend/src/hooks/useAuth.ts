@@ -14,7 +14,7 @@ export const useLogin = () => {
     try {
       const response = await loginUser(payload);
       // Após o login bem-sucedido, usa a função do contexto para salvar o token e o usuário
-      login(response.token, response.user);
+      login(response.access_token, response.user);
       return response;
     } catch (err) {
       const errorMessage =
@@ -41,7 +41,7 @@ export const useRegister = () => {
     try {
       const response = await registerUser(payload);
       // Após o registro bem-sucedido, a API retorna o token, então usamos a função de login
-      login(response.token, response.user);
+      login(response.access_token, response.user);
       return response;
     } catch (err) {
       const errorMessage =

@@ -94,6 +94,7 @@ export function LoginForm() {
           password: formData.password,
         });
         if (response) {
+          console.log("Registro bem-sucedido:", response);
           router.push("/");
         }
       } else {
@@ -103,6 +104,7 @@ export function LoginForm() {
           password: formData.password,
         });
         if (response) {
+          console.log("login bem-sucedido:", response);
           router.push("/");
         }
       }

@@ -9,9 +9,10 @@ import {
   useCallback,
   useMemo,
 } from "react";
-import { Navigate } from "react-router-dom";
+import Cookies from "js-cookie";
 import { AuthContextType } from "@/types/auth";
 import { User } from "@/types/user";
+import { useRouter } from "next/navigation";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -22,18 +23,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const getToken = useCallback(() => {
-    return localStorage.getItem(AUTH_TOKEN_KEY);
+    return Cookies.get(AUTH_TOKEN_KEY);
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
+    Cookies.remove(AUTH_TOKEN_KEY);
     setUser(null);
     setIsAuthenticated(false);
   }, []);
 
   // Agora, a função login recebe o token E os dados do usuário
   const login = useCallback((token: string, userData: User) => {
-    localStorage.setItem(AUTH_TOKEN_KEY, token);
+    Cookies.set(AUTH_TOKEN_KEY, token, { expires: 7 });
     setUser(userData);
     setIsAuthenticated(true);
   }, []);
@@ -59,7 +60,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       const userData = decodeAndRestoreSession(token);
       if (userData) {
-        // Usa a função login para setar o estado, mas sem precisar decodificar novamente
         login(token, userData);
       } else {
         logout();
@@ -95,9 +95,17 @@ export const useAuth = () => {
 
 export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router]);
+
+  // Retorna null ou um loading screen enquanto redireciona
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return null;
   }
 
   return children;

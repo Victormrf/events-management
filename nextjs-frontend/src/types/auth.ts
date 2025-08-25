@@ -17,7 +17,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   login: (token: string, user: User) => void;
   logout: () => void;
-  getToken: () => string | null;
+  getToken: () => string | undefined;
 }
 
 export type RegisterPayload = {
@@ -33,7 +33,7 @@ export type LoginPayload = {
 };
 
 export type AuthResponse = {
-  token: string;
+  access_token: string;
   user: {
     id: string;
     name: string;

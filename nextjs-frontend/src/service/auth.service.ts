@@ -26,7 +26,9 @@ export const registerUser = async (
   }
 };
 
-export async function loginUser(payload: LoginPayload): Promise<AuthResponse> {
+export const loginUser = async (
+  payload: LoginPayload
+): Promise<AuthResponse> => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
     {
@@ -41,4 +43,4 @@ export async function loginUser(payload: LoginPayload): Promise<AuthResponse> {
   }
 
   return response.json();
-}
+};
