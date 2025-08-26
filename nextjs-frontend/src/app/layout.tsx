@@ -6,11 +6,11 @@ import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/context/auth-provider";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "Events Manager",
   description: "Manage and discover amazing events",
-  generator: "v0.app",
 };
 
 export default function RootLayout({
@@ -32,7 +32,9 @@ html {
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
           <Header />
-          <main className="flex-1">{children}</main>
+          <main className="flex-1">
+            {children} <Toaster />
+          </main>
           <Footer />
         </AuthProvider>
       </body>

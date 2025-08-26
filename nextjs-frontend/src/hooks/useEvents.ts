@@ -90,19 +90,21 @@ export function useCreateEvent() {
       return;
     }
 
-    try {
-      const newEvent = await createEvent(token, payload);
-      setSuccess(true);
-      return newEvent;
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Erro desconhecido ao criar evento.");
-      }
-    } finally {
-      setLoading(false);
-    }
+    // try {
+    console.log("Creating event with payload:", payload);
+
+    const newEvent = await createEvent(token, payload);
+    setSuccess(true);
+    return newEvent;
+    // } catch (err) {
+    //   if (err instanceof Error) {
+    //     setError(err.message);
+    //   } else {
+    //     setError("Erro desconhecido ao criar evento.");
+    //   }
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   return { mutate, loading, error, success };
