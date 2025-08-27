@@ -61,27 +61,7 @@ export interface EditFormData {
 }
 
 export interface EventDetailsModalProps {
-  event: {
-    id: string;
-    title: string;
-    description: string;
-    date: Date;
-    maxAttendees: number;
-    price: number;
-    createdAt: Date;
-    address: {
-      street: string;
-      neighborhood: string | null;
-      city: string;
-      state: string;
-      country: string;
-      zipCode: string | null;
-    };
-    creator: {
-      name: string;
-      email: string;
-    };
-  } | null;
+  event: Event | null;
   isOpen: boolean;
   onClose: () => void;
 }

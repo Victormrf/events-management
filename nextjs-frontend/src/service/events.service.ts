@@ -60,3 +60,48 @@ export const createEvent = async (
 
   return response.json();
 };
+
+export const updateEvent = async (
+  token: string,
+  eventId: string,
+  payload: Partial<CreateEventPayload>
+): Promise<Event> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/events/${eventId}`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Falha ao atualizar evento.");
+  }
+
+  return response.json();
+};
+
+export const deleteEvent = async (
+  token: string,
+  eventId: string
+): Promise<void> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/events/${eventId}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Falha ao excluir evento.");
+  }
+};

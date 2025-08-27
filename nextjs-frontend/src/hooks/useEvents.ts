@@ -1,7 +1,13 @@
 import { useAuth } from "@/context/auth-provider";
-import { createEvent, getEvents, getMyEvents } from "@/service/events.service";
+import {
+  createEvent,
+  deleteEvent,
+  getEvents,
+  getMyEvents,
+  updateEvent,
+} from "@/service/events.service";
 import { CreateEventPayload, Event } from "@/types/event";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export function useEvents() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -32,45 +38,41 @@ export function useEvents() {
 }
 
 export function useMyEvents() {
-  const { isAuthenticated, getToken } = useAuth();
+  const { getToken } = useAuth();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchMyEvents = async () => {
-      if (!isAuthenticated) {
-        setLoading(false);
-        return;
-      }
+  const fetchMyEvents = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const token = getToken();
 
-      setLoading(true);
-      const token = getToken();
-      if (token) {
-        try {
-          const myEvents = await getMyEvents(token);
-          setEvents(myEvents);
-          setError(null);
-        } catch (err) {
-          if (err instanceof Error) {
-            setError(err.message);
-          } else {
-            setError(String(err));
-          }
-        } finally {
-          setLoading(false);
-        }
+    if (!token) {
+      setError("Token de autenticação não disponível.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const fetchedEvents = await getMyEvents(token);
+      setEvents(fetchedEvents);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
       } else {
-        setLoading(false);
-        setError("Token de autenticação não disponível.");
-        setEvents([]);
+        setError("Erro desconhecido ao buscar eventos.");
       }
-    };
+    } finally {
+      setLoading(false);
+    }
+  }, [getToken]);
 
+  useEffect(() => {
     fetchMyEvents();
-  }, [isAuthenticated, getToken]);
+  }, [fetchMyEvents]);
 
-  return { events, loading, error };
+  return { events, loading, error, refetch: fetchMyEvents };
 }
 
 export function useCreateEvent() {
@@ -90,21 +92,91 @@ export function useCreateEvent() {
       return;
     }
 
-    // try {
-    console.log("Creating event with payload:", payload);
+    try {
+      const newEvent = await createEvent(token, payload);
+      setSuccess(true);
+      return newEvent;
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Erro desconhecido ao criar evento.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const newEvent = await createEvent(token, payload);
-    setSuccess(true);
-    return newEvent;
-    // } catch (err) {
-    //   if (err instanceof Error) {
-    //     setError(err.message);
-    //   } else {
-    //     setError("Erro desconhecido ao criar evento.");
-    //   }
-    // } finally {
-    //   setLoading(false);
-    // }
+  return { mutate, loading, error, success };
+}
+
+export function useUpdateEvent() {
+  const { getToken } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const mutate = async (
+    eventId: string,
+    payload: Partial<CreateEventPayload>
+  ) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+    const token = getToken();
+    if (!token) {
+      setError("Token de autenticação não disponível.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const updatedEvent = await updateEvent(token, eventId, payload);
+      setSuccess(true);
+      return updatedEvent;
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Erro desconhecido ao atualizar evento.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { mutate, loading, error, success };
+}
+
+export function useDeleteEvent() {
+  const { getToken } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const mutate = async (eventId: string) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+    const token = getToken();
+    if (!token) {
+      setError("Token de autenticação não disponível.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await deleteEvent(token, eventId);
+      setSuccess(true);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Erro desconhecido ao deletar evento.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return { mutate, loading, error, success };
