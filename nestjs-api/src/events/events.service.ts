@@ -60,6 +60,23 @@ export class EventsService {
     return event;
   }
 
+  async findByCreatorId(creatorId: string) {
+    console.log('Finding events for creatorId:', creatorId);
+    const events = await this.prisma.event.findMany({
+      where: { creatorId },
+      include: {
+        address: true,
+      },
+      orderBy: { date: 'asc' },
+    });
+
+    if (!events || events.length === 0) {
+      throw new NotFoundException('Nenhum evento encontrado para este criador');
+    }
+
+    return events;
+  }
+
   async findAttendeesByEvent(id: string): Promise<Attendee[]> {
     const eventWithAttendees = await this.prisma.event.findUnique({
       where: { id },

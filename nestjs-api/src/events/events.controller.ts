@@ -25,6 +25,12 @@ export class EventsController {
     return this.eventsService.create(createEventDto, req.user.id);
   }
 
+  @Get('my-events')
+  @UseGuards(JwtAuthGuard)
+  findByCreator(@Request() req) {
+    return this.eventsService.findByCreatorId(req.user.id);
+  }
+
   @Get()
   findAll() {
     return this.eventsService.findAll();
@@ -42,16 +48,14 @@ export class EventsController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(OwnerGuard)
+  @UseGuards(JwtAuthGuard, OwnerGuard)
   update(@Param('id') id: string, @Body() updateEventDto: UpdateEventDto) {
     console.log('Controller DTO:', updateEventDto);
     return this.eventsService.update(id, updateEventDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(OwnerGuard)
+  @UseGuards(JwtAuthGuard, OwnerGuard)
   delete(@Param('id') id: string) {
     return this.eventsService.delete(id);
   }

@@ -22,7 +22,7 @@ Content-Type: application/json
 @jwt_token = {{loginUser.response.body.access_token}}
 
 ###
-GET http://localhost:3000/auth/me
+GET http://localhost:3000/auth/profile
 Authorization: Bearer {{jwt_token}}
 
 ###
@@ -59,13 +59,25 @@ GET http://localhost:3000/events/{{event_id}}
 Authorization: Bearer {{jwt_token}}
 
 ###
+GET http://localhost:3000/events/my-events
+Authorization: Bearer {{jwt_token}}
+
+###
 PATCH  http://localhost:3000/events/{{event_id}}       
 Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 
 {
   "description": "This is a new test event",
-  "price": 20.60
+  "price": 20.60,
+  "address": {
+    "street": "new street test",
+    "neighborhood": "new neighborhood test",
+    "city": "new city test",
+    "state": "new state test",
+    "country": "new country test",
+    "zipCode": "98765-432"
+  }
 }
 
 ###
