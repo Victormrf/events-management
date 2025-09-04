@@ -44,3 +44,28 @@ export const loginUser = async (
 
   return response.json();
 };
+
+export const getProfile = async (token: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/profile`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Falha ao obter perfil do usuário: ${response.statusText}`
+      );
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Erro na camada de serviço de autenticação: ", error);
+    throw error;
+  }
+};

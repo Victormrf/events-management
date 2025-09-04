@@ -13,6 +13,7 @@ import Cookies from "js-cookie";
 import { AuthContextType } from "@/types/auth";
 import { User } from "@/types/user";
 import { useRouter } from "next/navigation";
+import { getProfile } from "@/service/auth.service";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -21,6 +22,7 @@ const AUTH_TOKEN_KEY = "auth-token";
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const getToken = useCallback(() => {
     return Cookies.get(AUTH_TOKEN_KEY);
@@ -39,33 +41,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(true);
   }, []);
 
-  // Função para decodificar o token para RESTAURAR a sessão
-  const decodeAndRestoreSession = useCallback((token: string) => {
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return {
-        id: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        role: payload.role,
-      } as User;
-    } catch (e) {
-      console.error("Falha ao decodificar o token para restaurar a sessão:", e);
-      return null;
-    }
-  }, []);
+  // Função para recuperar o perfil do usuário
+  const fetchUserProfile = useCallback(
+    async (token: string) => {
+      setIsLoading(true); // NOVO: Inicia o carregamento
+      try {
+        const userData = await getProfile(token);
+        setUser(userData);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Erro ao buscar o perfil do usuário:", error);
+        logout();
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [logout]
+  );
 
   useEffect(() => {
     const token = getToken();
     if (token) {
-      const userData = decodeAndRestoreSession(token);
-      if (userData) {
-        login(token, userData);
-      } else {
-        logout();
-      }
+      fetchUserProfile(token);
+    } else {
+      setIsLoading(false); // NOVO: Finaliza o carregamento se não houver token
     }
-  }, [getToken, decodeAndRestoreSession, login, logout]);
+  }, [getToken, fetchUserProfile]);
 
   const authContextValue = useMemo(
     () => ({
@@ -74,8 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       login,
       logout,
       getToken,
+      isLoading,
     }),
-    [user, isAuthenticated, login, logout, getToken]
+    [user, isAuthenticated, login, logout, getToken, isLoading]
   );
 
   return (
@@ -103,7 +105,6 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isAuthenticated, router]);
 
-  // Retorna null ou um loading screen enquanto redireciona
   if (!isAuthenticated) {
     return null;
   }

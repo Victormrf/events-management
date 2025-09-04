@@ -6,11 +6,15 @@ import { useAuth } from "@/context/auth-provider";
 import Link from "next/link";
 
 export function HeaderActions() {
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, user, logout, isLoading } = useAuth();
 
   const handleLogout = () => {
     logout();
   };
+
+  if (typeof window === "undefined" || isLoading) {
+    return null;
+  }
 
   return (
     <div className="flex items-center gap-2">

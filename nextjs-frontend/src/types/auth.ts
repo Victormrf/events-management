@@ -18,6 +18,7 @@ export interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   getToken: () => string | undefined;
+  isLoading: boolean;
 }
 
 export type RegisterPayload = {
