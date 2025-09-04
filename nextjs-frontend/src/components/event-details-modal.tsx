@@ -107,16 +107,13 @@ export function EventDetailsModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>{isEditing ? "Editar Evento" : "Detalhes do Evento"}</span>
+            <span className="sr-only">
+              {isEditing ? "Editar Evento" : "Detalhes do Evento"}
+            </span>
             <div className="flex gap-2">
-              {!isEditing ? (
-                <Button size="sm" variant="outline" onClick={handleEdit}>
-                  <Edit className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
-              ) : (
+              {isEditing && (
                 <Button size="sm" variant="outline" onClick={handleCancelEdit}>
-                  <X className="h-4 w-4 mr-1" />
+                  <X className="h-6 w-6 mr-1" />
                   Cancelar
                 </Button>
               )}
@@ -128,15 +125,13 @@ export function EventDetailsModal({
           // View Mode
           <div className="space-y-6">
             <div className="space-y-4">
-              <div className="flex items-start justify-between">
-                <h2 className="text-2xl font-bold">{event.title}</h2>
-                <Badge
-                  variant={event.price === "0" ? "secondary" : "default"}
-                  className="text-sm"
-                >
-                  {formatPrice(Number(event.price))}
-                </Badge>
-              </div>
+              <h2 className="text-2xl font-bold">{event.title}</h2>
+              <Badge
+                variant={event.price === "0" ? "secondary" : "default"}
+                className="text-sm"
+              >
+                {formatPrice(Number(event.price))}
+              </Badge>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
@@ -175,6 +170,13 @@ export function EventDetailsModal({
               <p className="text-muted-foreground">
                 {formatFullAddress(event.address)}
               </p>
+            </div>
+
+            <div className="flex justify-end">
+              <Button size="sm" variant="outline" onClick={handleEdit}>
+                <Edit className="h-4 w-4 mr-1" />
+                Editar
+              </Button>
             </div>
           </div>
         ) : (

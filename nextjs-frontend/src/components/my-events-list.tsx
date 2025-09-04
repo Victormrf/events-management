@@ -4,11 +4,18 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users, Edit, Trash2, Eye } from "lucide-react";
+import { Calendar, MapPin, Users, Trash2, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { EventDetailsModal } from "@/components/event-details-modal";
 import { useDeleteEvent, useMyEvents } from "@/hooks/useEvents";
 import toast from "react-hot-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
 
 export function MyEventsList() {
   const { events, loading, error, refetch } = useMyEvents();
@@ -21,6 +28,7 @@ export function MyEventsList() {
     null
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const formatPrice = (price: string) => {
     return price === "0" ? "Gratuito" : `R$ ${Number(price).toFixed(2)}`;
@@ -35,13 +43,18 @@ export function MyEventsList() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteEvent = async (eventId: string) => {
-    if (confirm("Tem certeza que deseja excluir este evento?")) {
-      await toast.promise(deleteEvent(eventId), {
+  const handleDeleteEvent = (eventId: string) => {
+    setDeleteId(eventId);
+  };
+
+  const confirmDeleteEvent = async () => {
+    if (deleteId) {
+      await toast.promise(deleteEvent(deleteId), {
         loading: "Excluindo evento...",
         success: "Evento excluído com sucesso!",
         error: `Falha ao excluir evento: ${deleteError || "Erro desconhecido"}`,
       });
+      setDeleteId(null);
       refetch();
     }
   };
@@ -133,10 +146,6 @@ export function MyEventsList() {
                   <Eye className="h-4 w-4 mr-1" />
                   Ver
                 </Button>
-                <Button size="sm" variant="outline">
-                  <Edit className="h-4 w-4 mr-1" />
-                  Editar
-                </Button>
                 <Button
                   size="sm"
                   variant="outline"
@@ -161,6 +170,31 @@ export function MyEventsList() {
         }}
         onSuccess={refetch}
       />
+
+      {/* Modal de exclusão de evento */}
+      <Dialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Excluir evento</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir este evento? Essa ação não pode ser
+              desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button variant="outline" onClick={() => setDeleteId(null)}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteEvent}
+              disabled={deleting}
+            >
+              Excluir
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
