@@ -61,11 +61,11 @@ export class EventsService {
   }
 
   async findByCreatorId(creatorId: string) {
-    console.log('Finding events for creatorId:', creatorId);
     const events = await this.prisma.event.findMany({
       where: { creatorId },
       include: {
         address: true,
+        creator: { select: { name: true, email: true } },
       },
       orderBy: { date: 'asc' },
     });

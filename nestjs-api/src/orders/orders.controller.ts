@@ -3,6 +3,7 @@ import {
   ConflictException,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   Request,
@@ -33,6 +34,12 @@ export class OrdersController {
         'Não foi possível processar a inscrição no evento.',
       );
     }
+  }
+
+  @Get('/my-orders')
+  async getUserOrders(@Request() req) {
+    const userId = req.user.id;
+    return this.ordersService.getUserOrders(userId);
   }
 
   @Delete(':eventId')

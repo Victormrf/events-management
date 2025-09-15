@@ -118,4 +118,23 @@ export class OrdersService {
 
     return { message: 'Inscrição cancelada com sucesso.' };
   }
+
+  async getUserOrders(userId: string) {
+    const orders = await this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        event: true,
+        attendees: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!orders || orders.length === 0) {
+      throw new NotFoundException(
+        'Nenhuma inscrição encontrada para este usuário',
+      );
+    }
+
+    return orders;
+  }
 }
