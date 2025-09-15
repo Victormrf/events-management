@@ -3,8 +3,19 @@ export type Attendee = {
   email: string;
 };
 
+interface OrderEvent {
+  id: string;
+  title: string;
+  date: string;
+  price: string;
+}
+
 export type Order = {
   eventId: string;
+  totalAmount: number;
+  quantity: number;
+  status: string;
+  event: OrderEvent;
   attendees: Attendee[];
 };
 

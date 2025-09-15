@@ -23,3 +23,27 @@ export const generateOrder = async (token: string, payload: Order) => {
     throw error;
   }
 };
+
+export const fetchUserOrders = async (token: string) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/orders/my-orders`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error(
+        `Falha ao buscar inscrições do usuário: ${response.statusText}`
+      );
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Erro na camada de serviço de ordens:", error);
+    throw error;
+  }
+};
