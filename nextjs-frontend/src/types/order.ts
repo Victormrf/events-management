@@ -1,21 +1,19 @@
+import { Event } from "./event";
+
 export type Attendee = {
+  id: string;
   name: string;
   email: string;
 };
 
-interface OrderEvent {
-  id: string;
-  title: string;
-  date: string;
-  price: string;
-}
-
 export type Order = {
+  id: string;
   eventId: string;
   totalAmount: number;
   quantity: number;
   status: string;
-  event: OrderEvent;
+  createdAt: string;
+  event: Event;
   attendees: Attendee[];
 };
 
@@ -23,4 +21,10 @@ export type OrderRegistrationResponse = {
   message: string;
   orderId: string;
   registeredAttendees: number;
+};
+
+export type OrderSummary = {
+  individualPrice?: number;
+  quantity?: number;
+  totalPrice?: number;
 };

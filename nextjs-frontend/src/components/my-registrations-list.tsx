@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { Address } from "@/types/address";
+import { useMyOrders } from "@/hooks/useOrder";
 
 const mockRegistrations = [
   {
@@ -100,6 +101,7 @@ const mockRegistrations = [
 ];
 
 export function MyRegistrationsList() {
+  const { orders, loading, error } = useMyOrders();
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
   const formatPrice = (price: string | number) => {
@@ -141,6 +143,41 @@ export function MyRegistrationsList() {
     setExpandedCard(expandedCard === registrationId ? null : registrationId);
   };
 
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin h-10 w-10 text-primary-500 mx-auto mb-4" />
+        <p className="text-muted-foreground">Carregando suas inscrições...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-semibold mb-2 text-destructive">
+          Erro ao carregar inscrições
+        </h3>
+        <p className="text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Calendar className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+        <h3 className="text-lg font-semibold mb-2">
+          Nenhuma insrição encontrada
+        </h3>
+        <p className="text-muted-foreground mb-4">
+          Você ainda não se inscreveu em nenhum evento.
+        </p>
+        <Button>Explore eventos próximos a você</Button>
+      </div>
+    );
+  }
+
   if (mockRegistrations.length === 0) {
     return (
       <div className="text-center py-12">
@@ -158,7 +195,7 @@ export function MyRegistrationsList() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {mockRegistrations.map((registration) => {
+      {orders.map((registration) => {
         const isExpanded = expandedCard === registration.id;
         const statusInfo = getStatusBadge(registration.status);
 

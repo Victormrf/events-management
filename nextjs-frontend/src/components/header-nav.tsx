@@ -27,6 +27,12 @@ export function HeaderNav() {
           >
             My Events
           </Link>
+          <Link
+            href="/my-registrations"
+            className="text-sm font-medium hover:text-primary transition-colors"
+          >
+            My Registrations
+          </Link>
         </>
       )}
     </nav>
