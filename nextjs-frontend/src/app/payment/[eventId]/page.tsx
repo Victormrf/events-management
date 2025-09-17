@@ -1,22 +1,28 @@
 "use client";
 
+import { useGetOrder } from "@/hooks/useOrder";
 import { OrderSummary } from "@/types/order";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function PaymentPage() {
+  const params = useParams();
+  const eventId = params?.eventId as string;
+  const { order, loading, error } = useGetOrder(eventId);
   const [orderSummary, setOrderSummary] = useState<OrderSummary>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setOrderSummary(
-        JSON.parse(localStorage.getItem("order-summary") || "{}")
-      );
+    if (typeof window !== "undefined" && order) {
+      setOrderSummary({
+        individualPrice: parseFloat(order.event.price),
+        quantity: order.attendees.length,
+        totalPrice: order.totalAmount,
+      });
     }
-  }, []);
+  }, [order]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,10 +31,31 @@ export default function PaymentPage() {
 
     // Simula processamento de pagamento
     setTimeout(() => {
-      localStorage.removeItem("order-summary");
-      router.push("/payment/success");
+      router.push(`/payment/${eventId}/success`);
     }, 2000);
   };
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin h-10 w-10 text-primary-500 mx-auto mb-4" />
+        <p className="text-muted-foreground">
+          Recuperando dados da inscrição...
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h3 className="text-lg font-semibold mb-2 text-destructive">
+          Erro ao carregar a inscrição
+        </h3>
+        <p className="text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
 
   return (
     <>

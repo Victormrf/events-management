@@ -1,7 +1,7 @@
 import { Event } from "./event";
 
 export type Attendee = {
-  id: string;
+  id?: string;
   name: string;
   email: string;
 };
@@ -14,6 +14,11 @@ export type Order = {
   status: string;
   createdAt: string;
   event: Event;
+  attendees: Attendee[];
+};
+
+export type CreateOrderPayload = {
+  eventId: string;
   attendees: Attendee[];
 };
 

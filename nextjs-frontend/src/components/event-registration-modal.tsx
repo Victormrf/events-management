@@ -88,7 +88,7 @@ export function EventRegistrationModal({
         toast.success("Você será redirecionado para a página de pagamento.", {
           position: "bottom-center",
         });
-        router.push(`/payment-simulation?orderId=${Math.random()}`);
+        router.push(`/payment/${event.id}`);
       } else {
         toast.success("Seu registro no evento gratuito foi confirmado.", {
           position: "bottom-center",
@@ -102,7 +102,7 @@ export function EventRegistrationModal({
         position: "bottom-center",
       });
     }
-  }, [success, error, onOpenChange, totalPrice, router]);
+  }, [success, error, onOpenChange, totalPrice, router, event]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
