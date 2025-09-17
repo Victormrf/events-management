@@ -32,10 +32,10 @@ Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 
 {
-    "title": "Test event september",
-    "description": "This is a new test event",
-    "date": "2025-09-30T10:00:00Z",
-    "maxAttendees": 20,
+    "title": "Test event november",
+    "description": "This is a brand new test event",
+    "date": "2025-11-04T10:00:00Z",
+    "maxAttendees": 2,
     "price": 0,
     "address": {
         "street": "street test",
@@ -97,8 +97,8 @@ Content-Type: application/json
             "email": "email.teste.1@email.com"
         },
         {
-            "name": "Ciclano",
-            "email": "email.teste.2@email.com"
+            "name": "Beltrano",
+            "email": "email.teste.3@email.com"
         }
     ]
 
@@ -106,6 +106,10 @@ Content-Type: application/json
 
 ###
 GET http://localhost:3000/orders/my-orders
+Authorization: Bearer {{jwt_token}}
+
+###
+GET http://localhost:3000/orders/event/{{event_id}}
 Authorization: Bearer {{jwt_token}}
 
 ###

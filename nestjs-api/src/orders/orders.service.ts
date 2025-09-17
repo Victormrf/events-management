@@ -87,6 +87,24 @@ export class OrdersService {
     };
   }
 
+  async getOrderByEventAndUser(userId: string, eventId: string) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        userId: userId,
+        eventId: eventId,
+      },
+      include: {
+        event: { include: { address: true } },
+        attendees: true,
+      },
+    });
+    if (!order) {
+      throw new NotFoundException('Usuário não inscrito neste evento.');
+    }
+
+    return order;
+  }
+
   async cancelOrder(userId: string, eventId: string) {
     const order = await this.prisma.order.findFirst({
       where: {
@@ -123,7 +141,7 @@ export class OrdersService {
     const orders = await this.prisma.order.findMany({
       where: { userId },
       include: {
-        event: true,
+        event: { include: { address: true } },
         attendees: true,
       },
       orderBy: { createdAt: 'desc' },

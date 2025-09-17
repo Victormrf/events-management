@@ -42,6 +42,12 @@ export class OrdersController {
     return this.ordersService.getUserOrders(userId);
   }
 
+  @Get('/event/:eventId')
+  async getOrderByEvent(@Param('eventId') eventId: string, @Request() req) {
+    const userId = req.user.id;
+    return this.ordersService.getOrderByEventAndUser(userId, eventId);
+  }
+
   @Delete(':eventId')
   async cancelOrder(@Param('eventId') eventId: string, @Request() req) {
     const userId = req.user.id;
