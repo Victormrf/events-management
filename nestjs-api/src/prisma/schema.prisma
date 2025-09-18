@@ -44,7 +44,7 @@ model Event {
 // Representa o endereço de um evento
 model Address {
   id           String   @id @default(uuid())
-  number       Int
+  number       Int      @default(123)
   street       String
   neighborhood String?
   city         String
@@ -98,5 +98,5 @@ enum Role {
 enum OrderStatus {
   PENDING
   CONFIRMED
-  CANCELLED
+  CANCELED
 }

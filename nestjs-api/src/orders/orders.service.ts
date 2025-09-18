@@ -7,6 +7,7 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AttendeeDetailDto } from './dto/create-order.dto';
 import { Prisma } from '@prisma/client';
+import { OrderStatus } from 'src/common/enums/order-status.enum';
 
 @Injectable()
 export class OrdersService {
@@ -53,13 +54,6 @@ export class OrdersService {
     const eventPrice = new Prisma.Decimal(event.price.toString());
     const totalAmount = eventPrice.times(new Prisma.Decimal(quantity));
 
-    console.log({
-      user: userId,
-      event: eventId,
-      totalAmount: totalAmount.toNumber(),
-      quantity,
-    });
-
     // cria order
     const order = await this.prisma.order.create({
       data: {
@@ -67,6 +61,7 @@ export class OrdersService {
         event: { connect: { id: eventId } },
         totalAmount: totalAmount.toNumber(),
         quantity,
+        status: totalAmount.toNumber() > 0 ? 'PENDING' : 'CONFIRMED',
       },
     });
 
@@ -154,5 +149,41 @@ export class OrdersService {
     }
 
     return orders;
+  }
+
+  async updateOrderStatus(
+    userId: string,
+    eventId: string,
+    status: OrderStatus,
+  ) {
+    const order = await this.prisma.order.findFirst({
+      where: {
+        userId: userId,
+        eventId: eventId,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException(
+        'Inscrição não encontrada para este usuário e evento.',
+      );
+    }
+    if (order.status === 'CANCELED') {
+      throw new BadRequestException(
+        'Não é possível atualizar uma inscrição cancelada.',
+      );
+    }
+    if (order.status === 'CONFIRMED' && status === 'PENDING') {
+      throw new BadRequestException(
+        'Não é possível reverter uma inscrição confirmada para pendente.',
+      );
+    }
+
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: order.id },
+      data: { status },
+    });
+
+    return updatedOrder;
   }
 }

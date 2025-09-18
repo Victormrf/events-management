@@ -32,11 +32,11 @@ Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 
 {
-    "title": "Test event november",
-    "description": "This is a brand new test event",
-    "date": "2025-11-04T10:00:00Z",
+    "title": "Test event december",
+    "description": "This is a another brand new test event",
+    "date": "2025-12-04T10:00:00Z",
     "maxAttendees": 2,
-    "price": 0,
+    "price": 25,
     "address": {
         "street": "street test",
         "neighborhood": "neighborhood test",
@@ -107,6 +107,15 @@ Content-Type: application/json
 ###
 GET http://localhost:3000/orders/my-orders
 Authorization: Bearer {{jwt_token}}
+
+###
+PATCH http://localhost:3000/orders/event/{{event_id}}/change-status
+Authorization: Bearer {{jwt_token}}
+Content-Type: application/json
+
+{
+    "status": "CONFIRMED"
+}
 
 ###
 GET http://localhost:3000/orders/event/{{event_id}}

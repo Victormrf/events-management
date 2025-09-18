@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -12,6 +13,7 @@ import {
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { OrderStatus } from 'src/common/enums/order-status.enum';
 
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
@@ -52,5 +54,15 @@ export class OrdersController {
   async cancelOrder(@Param('eventId') eventId: string, @Request() req) {
     const userId = req.user.id;
     return this.ordersService.cancelOrder(userId, eventId);
+  }
+
+  @Patch('event/:eventId/change-status')
+  async changeOrderStatus(
+    @Param('eventId') eventId: string,
+    @Request() req,
+    @Body() body: { status: OrderStatus },
+  ) {
+    const userId = req.user.id;
+    return this.ordersService.updateOrderStatus(userId, eventId, body.status);
   }
 }
