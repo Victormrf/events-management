@@ -74,3 +74,9 @@ export const fetchUserOrders = async (token: string) => {
     throw error;
   }
 };
+
+export const changeOrderStatus = async (
+  token: string,
+  eventId: string,
+  status: "PENDING" | "CONFIRMED" | "CANCELED"
+) => {};
