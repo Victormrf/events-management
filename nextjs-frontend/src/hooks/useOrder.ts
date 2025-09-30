@@ -1,5 +1,6 @@
 import { useAuth } from "@/context/auth-provider";
 import {
+  changeOrderStatus,
   fetchOrder,
   fetchUserOrders,
   generateOrder,
@@ -119,4 +120,42 @@ export function useMyOrders() {
   }, [getToken]);
 
   return { orders, loading, error };
+}
+
+export function useChangeOrderStatus() {
+  const { getToken } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const mutate = async (
+    eventId: string,
+    status: "PENDING" | "CONFIRMED" | "CANCELED"
+  ) => {
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+    const token = getToken();
+    if (!token) {
+      setError("Token de autenticação não disponível.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await changeOrderStatus(token, eventId, status);
+      setSuccess(true);
+      return;
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Erro desconhecido ao atualizar status da inscrição.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { mutate, loading, error, success };
 }

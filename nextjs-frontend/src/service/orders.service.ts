@@ -79,4 +79,23 @@ export const changeOrderStatus = async (
   token: string,
   eventId: string,
   status: "PENDING" | "CONFIRMED" | "CANCELED"
-) => {};
+) => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/orders/event/${eventId}/change-status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status: status }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || "Falha ao atualizar evento.");
+  }
+
+  return response.json();
+};

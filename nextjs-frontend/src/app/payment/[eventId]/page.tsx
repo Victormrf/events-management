@@ -2,7 +2,7 @@
 
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useGetOrder } from "@/hooks/useOrder";
+import { useChangeOrderStatus, useGetOrder } from "@/hooks/useOrder";
 import { OrderSummary } from "@/types/order";
 import {
   Select,
@@ -24,6 +24,8 @@ export default function PaymentPage() {
   const [orderSummary, setOrderSummary] = useState<OrderSummary>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [cardBrand, setCardBrand] = useState<"visa" | "mastercard">("visa");
+  const { mutate: updateOrderStatus, error: updateError } =
+    useChangeOrderStatus();
   const router = useRouter();
 
   const CARD_PATTERNS = {
@@ -46,9 +48,13 @@ export default function PaymentPage() {
 
     setIsProcessing(true);
 
-    setTimeout(() => {
-      toast.success("Seu registro no evento foi confirmado.", {
-        position: "bottom-center",
+    setTimeout(async () => {
+      await toast.promise(updateOrderStatus(eventId, "CONFIRMED"), {
+        loading: "Salvando alterações...",
+        success: "Inscrição realizada com sucesso!",
+        error: `Falha ao confirmar inscrição: ${
+          updateError || "Erro desconhecido"
+        }`,
       });
       router.push(`/my-registrations`);
     }, 2000);
@@ -158,7 +164,6 @@ export default function PaymentPage() {
               </div>
             </div>
 
-            {/* --- BOTÃO SHADCN --- */}
             <Button type="submit" disabled={isProcessing} className="w-full">
               {isProcessing && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
