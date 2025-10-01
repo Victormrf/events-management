@@ -1,4 +1,5 @@
-import { Calendar, Github, Twitter, Mail } from "lucide-react";
+import { Github, Twitter, Mail } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 export function Footer() {
@@ -9,7 +10,12 @@ export function Footer() {
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-primary" />
+              <Image
+                src="/XploreHub_logo.png"
+                alt="XploreHub Logo"
+                width={32}
+                height={32}
+              />
               <span className="font-bold">Events Manager</span>
             </div>
             <p className="text-sm text-muted-foreground">

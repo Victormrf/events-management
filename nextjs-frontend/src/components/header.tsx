@@ -1,7 +1,7 @@
-import { Calendar } from "lucide-react";
 import Link from "next/link";
 import { HeaderNav } from "./header-nav";
 import { HeaderActions } from "./header-actions";
+import Image from "next/image";
 
 export function Header() {
   return (
@@ -10,10 +10,13 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo and brand */}
           <Link href="/" className="flex items-center gap-2">
-            <Calendar className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-primary">
-              Events Manager
-            </span>
+            <Image
+              src="/XploreHub_logo.png"
+              alt="XploreHub Logo"
+              width={32}
+              height={32}
+            />
+            <span className="text-xl font-bold text-primary">XploreHub</span>
           </Link>
 
           {/* Desktop navigation */}

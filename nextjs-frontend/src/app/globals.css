@@ -89,12 +89,12 @@
   /* --primary: #2176ff; */
   --primary: #ff206e;
   --primary-foreground: #ffffff;
-  --secondary: #417b5a;
+  --secondary: #135c33;
   --secondary-foreground: #ffffff;
   --muted: #342e37;
   --muted-foreground: #a0a0a0;
   --accent: #6e87f6;
-  --accent-foreground: #ffffff;
+  --accent-foreground: #5dd9c1;
   --destructive: oklch(0.704 0.191 22.216);
   --border: #444444;
   --input: #444444;

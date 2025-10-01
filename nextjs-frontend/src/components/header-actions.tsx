@@ -1,6 +1,6 @@
 "use client";
 
-import { Menu, Search } from "lucide-react";
+import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/context/auth-provider";
 import Link from "next/link";
@@ -29,7 +29,7 @@ export function HeaderActions() {
             variant="outline"
             className="hidden sm:flex bg-transparent"
           >
-            Sair
+            Log out
           </Button>
         </>
       ) : (
@@ -37,7 +37,7 @@ export function HeaderActions() {
         <>
           <Link href="/login">
             <Button variant="outline" className="hidden sm:flex bg-transparent">
-              Entrar
+              Log in / Sign up
             </Button>
           </Link>
         </>

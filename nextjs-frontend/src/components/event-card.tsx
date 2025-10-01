@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,13 +16,24 @@ import { Event } from "@/types/event";
 import { useAuth } from "@/context/auth-provider";
 import toast from "react-hot-toast";
 import { EventRegistrationModal } from "./event-registration-modal";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 type EventCardProps = {
   event: Event;
+  isExpanded: boolean;
+  onExpand: () => void;
+  onCollapse: () => void;
+  isDimmed: boolean;
 };
 
-export function EventCard({ event }: EventCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+export function EventCard({
+  event,
+  isExpanded,
+  onExpand,
+  onCollapse,
+  isDimmed,
+}: EventCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { isAuthenticated } = useAuth();
 
@@ -59,9 +69,20 @@ export function EventCard({ event }: EventCardProps) {
 
   return (
     <>
+      {/* Overlay de blur quando expandido */}
+      {isExpanded && (
+        <div
+          className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-all"
+          onClick={onCollapse}
+        />
+      )}
+
       <Card
-        className="group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50"
-        onClick={() => setIsExpanded(!isExpanded)}
+        className={cn(
+          "relative z-50 group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 hover:border-3",
+          isDimmed && "opacity-40 blur-[2px] pointer-events-none"
+        )}
+        onClick={() => (isExpanded ? onCollapse() : onExpand())}
       >
         <CardHeader className="space-y-3">
           <div className="flex items-start justify-between">
