@@ -18,9 +18,6 @@ export function HeaderActions() {
 
   return (
     <div className="flex items-center gap-2">
-      <Button variant="ghost" size="icon" className="hidden sm:flex">
-        <Search className="h-4 w-4" />
-      </Button>
       {isAuthenticated && user ? (
         // Mostra o nome do usuário e um botão de logout se estiver autenticado
         <>
