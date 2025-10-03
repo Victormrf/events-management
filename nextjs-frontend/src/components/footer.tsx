@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="border-t bg-muted/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="flex flex-col md:flex-row md:justify-between">
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -16,78 +16,16 @@ export function Footer() {
                 width={32}
                 height={32}
               />
-              <span className="font-bold">Events Manager</span>
+              <span className="font-bold text-primary">XploreHub</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Discover and manage amazing events in your area.
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h4 className="font-semibold">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link
-                  href="/"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Browse Events
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/create-event"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Create Event
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/my-events"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  My Dashboard
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Support */}
-          <div className="space-y-4">
-            <h4 className="font-semibold">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Help Center
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Contact Us
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Privacy Policy
-                </a>
-              </li>
-            </ul>
-          </div>
-
           {/* Social */}
-          <div className="space-y-4">
-            <h4 className="font-semibold">Connect</h4>
+          <div className="space-y-4 md:text-right md:items-end flex flex-col">
+            <h4 className="font-semibold text-secondary">Connect</h4>
             <div className="flex gap-2">
               <a
                 href="#"
