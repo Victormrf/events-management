@@ -13,7 +13,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Users, User, Edit, Save, X } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Users,
+  User,
+  Edit,
+  Save,
+  ArrowLeft,
+} from "lucide-react";
 import { format } from "date-fns";
 import { EditFormData, EventDetailsModalProps } from "@/types/event";
 import { useUpdateEvent } from "@/hooks/useEvents";
@@ -42,7 +50,7 @@ export function EventDetailsModal({
   if (!event) return null;
 
   const formatPrice = (price: number) => {
-    return price === 0 ? "Gratuito" : `R$ ${price.toFixed(2)}`;
+    return price === 0 ? "Free" : `R$ ${price.toFixed(2)}`;
   };
 
   const formatFullAddress = (address: typeof event.address) => {
@@ -112,9 +120,9 @@ export function EventDetailsModal({
             </span>
             <div className="flex gap-2">
               {isEditing && (
-                <Button size="sm" variant="outline" onClick={handleCancelEdit}>
-                  <X className="h-6 w-6 mr-1" />
-                  Cancelar
+                <Button size="sm" variant="default" onClick={handleCancelEdit}>
+                  <ArrowLeft className="h-6 w-6 mr-1" />
+                  Voltar
                 </Button>
               )}
             </div>
@@ -125,7 +133,7 @@ export function EventDetailsModal({
           // View Mode
           <div className="space-y-6">
             <div className="space-y-4">
-              <h2 className="text-2xl font-bold">{event.title}</h2>
+              <h2 className="text-2xl font-bold text-primary">{event.title}</h2>
               <Badge
                 variant={event.price === "0" ? "secondary" : "default"}
                 className="text-sm"
@@ -135,28 +143,34 @@ export function EventDetailsModal({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span>{format(event.date, "dd/MM/yyyy 'às' HH:mm")}</span>
+                  <Calendar className="h-4 w-4 text-primary" />
+                  <span className="text-muted-foreground">
+                    {format(event.date, "dd/MM/yyyy 'às' HH:mm")}
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <span>Máx. {event.maxAttendees} participantes</span>
+                  <Users className="h-4 w-4 text-primary" />
+                  <span className="text-muted-foreground">
+                    Máx. {event.maxAttendees} participantes
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <span>{event.creator.name}</span>
+                  <User className="h-4 w-4 text-primary" />
+                  <span className="text-muted-foreground">
+                    {event.creator.name}
+                  </span>
                 </div>
 
-                <div className="text-muted-foreground">
+                <div className="text-primary">
                   Criado em {format(event.createdAt, "dd/MM/yyyy")}
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h3 className="font-semibold">Descrição</h3>
+              <h3 className="font-semibold text-primary">Descrição</h3>
               <p className="text-muted-foreground leading-relaxed">
                 {event.description}
               </p>
@@ -164,8 +178,8 @@ export function EventDetailsModal({
 
             <div className="space-y-2">
               <h3 className="font-semibold flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Localização
+                <MapPin className="h-4 w-4 text-primary" />
+                <div className="text-primary">Localização</div>
               </h3>
               <p className="text-muted-foreground">
                 {formatFullAddress(event.address)}
@@ -181,7 +195,10 @@ export function EventDetailsModal({
           </div>
         ) : (
           // Edit Mode
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-6 text-muted-foreground"
+          >
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-title">Título *</Label>

@@ -109,7 +109,7 @@ GET http://localhost:3000/orders/my-orders
 Authorization: Bearer {{jwt_token}}
 
 ###
-PATCH http://localhost:3000/orders/event/{{event_id}}/change-status
+PATCH http://localhost:3000/orders/event/feaab67a-84fa-4bfc-9245-9915e883739b/change-status
 Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 

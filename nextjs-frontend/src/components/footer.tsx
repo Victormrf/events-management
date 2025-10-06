@@ -1,6 +1,5 @@
-import { Github, Twitter, Mail } from "lucide-react";
+import { Github, Mail, Linkedin } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 
 export function Footer() {
   return (
@@ -28,20 +27,20 @@ export function Footer() {
             <h4 className="font-semibold text-secondary">Connect</h4>
             <div className="flex gap-2">
               <a
-                href="#"
-                className="p-2 rounded-md bg-background hover:bg-accent transition-colors"
+                href="https://www.linkedin.com/in/victor-manuel-fernandes/"
+                className="p-2 rounded-md bg-background hover:bg-accent hover:text-primary  transition-colors"
               >
-                <Twitter className="h-4 w-4" />
+                <Linkedin className="h-4 w-4" />
               </a>
               <a
-                href="#"
-                className="p-2 rounded-md bg-background hover:bg-accent transition-colors"
+                href="https://github.com/Victormrf"
+                className="p-2 rounded-md bg-background hover:bg-accent hover:text-primary  transition-colors"
               >
                 <Github className="h-4 w-4" />
               </a>
               <a
-                href="#"
-                className="p-2 rounded-md bg-background hover:bg-accent transition-colors"
+                href="vmrf2000@hotmail.com"
+                className="p-2 rounded-md bg-background hover:bg-accent hover:text-primary  transition-colors"
               >
                 <Mail className="h-4 w-4" />
               </a>
