@@ -8,13 +8,18 @@ import { Attendee } from '@prisma/client';
 export class EventsService {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateEventDto, creatorId: string) {
+  async create(
+    data: CreateEventDto,
+    creatorId: string,
+    imageUrl: string | null,
+  ) {
     return this.prisma.event.create({
       data: {
         ...data,
         date: new Date(data.date),
         maxAttendees: data.maxAttendees,
         price: data.price !== undefined ? data.price.toFixed(2) : '0.00',
+        image: imageUrl,
         creator: {
           connect: { id: creatorId },
         },
@@ -102,14 +107,14 @@ export class EventsService {
     return eventWithAttendees.orders.flatMap((order) => order.attendees);
   }
 
-  async update(id: string, data: UpdateEventDto) {
-    console.log('Update data:', data);
+  async update(id: string, data: UpdateEventDto, imageUrl: string | null) {
     return this.prisma.event.update({
       where: { id },
       data: {
         ...data,
         date: data.date ? new Date(data.date) : undefined,
         price: data.price !== undefined ? data.price.toFixed(2) : undefined,
+        ...(imageUrl !== null && { image: imageUrl }),
         ...(data.address && {
           address: {
             update: data.address,

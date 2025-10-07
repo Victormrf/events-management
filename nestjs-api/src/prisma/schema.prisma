@@ -29,6 +29,7 @@ model Event {
   date        DateTime
   maxAttendees Int?
   price       Decimal  @default(0.00) @db.Decimal(10, 2)
+  image       String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
