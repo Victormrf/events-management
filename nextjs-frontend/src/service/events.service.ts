@@ -42,15 +42,28 @@ export const getMyEvents = async (token: string): Promise<Event[]> => {
 
 export const createEvent = async (
   token: string,
-  payload: CreateEventPayload
+  data: CreateEventPayload,
+  imageFile: File | null
 ): Promise<Event> => {
+  const formData = new FormData();
+
+  if (imageFile) {
+    formData.append("image", imageFile);
+  }
+
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+  formData.append("date", data.date);
+  formData.append("maxAttendees", String(data.maxAttendees));
+  formData.append("price", String(data.price));
+  formData.append("address", JSON.stringify(data.address));
+
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(payload),
+    body: formData,
   });
 
   if (!response.ok) {

@@ -81,7 +81,10 @@ export function useCreateEvent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const mutate = async (payload: CreateEventPayload) => {
+  const mutate = async (
+    payload: CreateEventPayload,
+    imageFile: File | null
+  ) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
@@ -93,7 +96,7 @@ export function useCreateEvent() {
     }
 
     try {
-      const newEvent = await createEvent(token, payload);
+      const newEvent = await createEvent(token, payload, imageFile);
       setSuccess(true);
       return newEvent;
     } catch (err) {
@@ -102,6 +105,7 @@ export function useCreateEvent() {
       } else {
         setError("Erro desconhecido ao criar evento.");
       }
+      setSuccess(false);
     } finally {
       setLoading(false);
     }

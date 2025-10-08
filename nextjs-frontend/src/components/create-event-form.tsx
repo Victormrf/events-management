@@ -6,13 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, MapPin, Users, DollarSign } from "lucide-react";
+import { CalendarIcon, MapPin, Users, DollarSign, Image } from "lucide-react";
 import { EventFormData } from "@/types/event";
 import toast from "react-hot-toast";
 import { useCreateEvent } from "@/hooks/useEvents";
+import { useRouter } from "next/navigation";
 
 export function CreateEventForm() {
   const { mutate, loading, error } = useCreateEvent();
+  const router = useRouter();
 
   const {
     register,
@@ -22,6 +24,8 @@ export function CreateEventForm() {
   } = useForm<EventFormData>();
 
   const onSubmit = async (data: EventFormData) => {
+    const imageFile =
+      data.image && data.image.length > 0 ? data.image[0] : null;
     const eventData = {
       title: data.title,
       description: data.description,
@@ -32,12 +36,13 @@ export function CreateEventForm() {
     };
 
     // chamar a mutação para criar evento
-    const newEvent = await mutate(eventData);
+    const newEvent = await mutate(eventData, imageFile);
 
     // Verificar se criação do evento foi bem sucedida
     if (newEvent) {
       toast.success("Evento criado com sucesso!");
       reset();
+      router.push("/my-events");
     } else {
       toast.error(error || "Erro ao criar evento. Tente novamente.");
     }
@@ -123,6 +128,7 @@ export function CreateEventForm() {
                   {...register("maxAttendees", {
                     required: "Número máximo é obrigatório",
                     min: { value: 1, message: "Mínimo 1 participante" },
+                    valueAsNumber: true,
                   })}
                   placeholder="100"
                   className={errors.maxAttendees ? "border-destructive" : ""}
@@ -147,6 +153,7 @@ export function CreateEventForm() {
                   {...register("price", {
                     required: "Preço é obrigatório",
                     min: { value: 0, message: "Preço não pode ser negativo" },
+                    valueAsNumber: true,
                   })}
                   placeholder="0.00"
                   className={errors.price ? "border-destructive" : ""}
@@ -157,6 +164,21 @@ export function CreateEventForm() {
                   </p>
                 )}
               </div>
+            </div>
+
+            {/* Campo de Upload de Imagem */}
+            <div className="space-y-2">
+              <Label htmlFor="image" className="flex items-center gap-1">
+                <Image className="h-4 w-4" />
+                Imagem do Evento (Opcional)
+              </Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                {...register("image")}
+                className="file:text-sm file:font-medium"
+              />
             </div>
           </div>
 

@@ -8,6 +8,7 @@ export type Event = {
   date: string;
   createdAt: string;
   maxAttendees?: number;
+  imageUrl?: string;
   price: string;
   address: Address;
   creator: User;
@@ -33,6 +34,7 @@ export interface EventFormData {
   description: string;
   date: string;
   maxAttendees: number;
+  image?: FileList;
   price: number;
   address: {
     street: string;
