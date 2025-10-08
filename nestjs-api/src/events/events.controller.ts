@@ -1,3 +1,5 @@
+// src/events/events.controller.ts
+
 import {
   Body,
   Controller,
@@ -11,37 +13,37 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { OwnerGuard } from 'src/guards/owner.guard';
-import { CloudinaryStorageService } from './cloudinary-storage,service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { CloudinaryStorageService } from './cloudinary-storage.service';
+import { FileValidationPipe } from 'src/pipes/file-validation-pipe';
+import { MulterOptions } from 'multer';
 
-const storageFactory = (service: CloudinaryStorageService) =>
-  service.createStorage('events');
+// Cria as opções do Multer usando o storage estático.
+// Isso resolve o erro de 'this' pois não dependemos da injeção do NestJS neste ponto.
+const multerOptions: MulterOptions = {
+  // Chamamos o método createStorage de forma estática, que usa a inicialização global/estática do Cloudinary.
+  storage: CloudinaryStorageService.createStorage('events'),
+};
 
 @Controller('events')
 export class EventsController {
-  constructor(
-    private readonly eventsService: EventsService,
-    private readonly cloudinaryStorageService: CloudinaryStorageService,
-  ) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: storageFactory(new CloudinaryStorageService(null as any)),
-    }),
-  )
+  // Usa o FileInterceptor com as opções de Multer definidas estaticamente
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   create(
-    @UploadedFile() file: any,
+    @UploadedFile(FileValidationPipe) file: any,
     @Body() createEventDto: CreateEventDto,
     @Request() req,
   ) {
-    const imageUrl = (file as any)?.path || null;
+    const imageUrl = file?.path || null; // Pega a URL do Cloudinary (req.file.path)
     return this.eventsService.create(createEventDto, req.user.id, imageUrl);
   }
 
@@ -69,17 +71,13 @@ export class EventsController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, OwnerGuard)
-  @UseInterceptors(
-    FileInterceptor('image', {
-      storage: storageFactory(new CloudinaryStorageService(null as any)),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('image', multerOptions))
   update(
+    @UploadedFile(FileValidationPipe) file: any,
     @Param('id') id: string,
-    @UploadedFile() file: any,
     @Body() updateEventDto: UpdateEventDto,
   ) {
-    const imageUrl = (file as any)?.path || null;
+    const imageUrl = file?.path || undefined; // Pega a URL do Cloudinary, pode ser undefined
     return this.eventsService.update(id, updateEventDto, imageUrl);
   }
 

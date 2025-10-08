@@ -1,14 +1,22 @@
-import { Injectable, Inject, BadRequestException } from '@nestjs/common';
+// src/events/cloudinary-storage.service.ts
+
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import { v2 } from 'cloudinary';
-import { CLOUDINARY } from '../cloudinary/constants';
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 @Injectable()
 export class CloudinaryStorageService {
-  constructor(@Inject(CLOUDINARY) private readonly cloudinary: typeof v2) {}
-  createStorage(folder: string) {
+  constructor() {}
+
+  static createStorage(folder: string) {
     return new CloudinaryStorage({
-      cloudinary: this.cloudinary,
+      cloudinary: cloudinary, // Usa a instância configurada estaticamente
       params: async (_req: any, file: any) => {
         if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
           throw new BadRequestException(
