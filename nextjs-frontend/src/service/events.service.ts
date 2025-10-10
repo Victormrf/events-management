@@ -1,5 +1,26 @@
 import { CreateEventPayload, Event } from "@/types/event";
 
+const serializeEventData = (
+  payload: CreateEventPayload & { image?: File | null },
+  formData: FormData
+) => {
+  // 1. Campos simples e números (serializados para string)
+  formData.append("title", payload.title);
+  formData.append("description", payload.description);
+  formData.append("date", payload.date);
+  formData.append("maxAttendees", String(payload.maxAttendees));
+  formData.append("price", String(payload.price));
+
+  // 2. Objeto aninhado 'address' (SERIALIZADO PARA JSON STRING)
+  // O backend espera que o objeto JSON complexo seja enviado como uma string.
+  formData.append("address", JSON.stringify(payload.address));
+
+  // 3. Imagem
+  if (payload.image) {
+    formData.append("image", payload.image);
+  }
+};
+
 export const getEvents = async (): Promise<Event[]> => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events`);
@@ -42,32 +63,24 @@ export const getMyEvents = async (token: string): Promise<Event[]> => {
 
 export const createEvent = async (
   token: string,
-  data: CreateEventPayload,
-  imageFile: File | null
+  payload: CreateEventPayload & { image?: File | null }
 ): Promise<Event> => {
   const formData = new FormData();
-
-  if (imageFile) {
-    formData.append("image", imageFile);
-  }
-
-  formData.append("title", data.title);
-  formData.append("description", data.description);
-  formData.append("date", data.date);
-  formData.append("maxAttendees", String(data.maxAttendees));
-  formData.append("price", String(data.price));
-  formData.append("address", JSON.stringify(data.address));
+  serializeEventData(payload, formData); // Usa a helper para montar o body
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/events`, {
     method: "POST",
     headers: {
+      // Importante: O navegador define o Content-Type: multipart/form-data
+      // Não inclua o header manualmente!
       Authorization: `Bearer ${token}`,
     },
-    body: formData,
+    body: formData, // Envia o objeto FormData
   });
 
   if (!response.ok) {
     const errorData = await response.json();
+    // Lançar a mensagem de erro do backend para o toast
     throw new Error(errorData.message || "Falha ao criar evento.");
   }
 
@@ -77,17 +90,22 @@ export const createEvent = async (
 export const updateEvent = async (
   token: string,
   eventId: string,
-  payload: Partial<CreateEventPayload>
+  payload: Partial<CreateEventPayload> & { image?: File | null }
 ): Promise<Event> => {
+  const formData = new FormData();
+  serializeEventData(
+    payload as CreateEventPayload & { image?: File | null },
+    formData
+  );
+
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/events/${eventId}`,
     {
       method: "PATCH",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify(payload),
+      body: formData,
     }
   );
 

@@ -1,3 +1,5 @@
+// components/create-event-form.tsx
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -6,43 +8,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, MapPin, Users, DollarSign, Image } from "lucide-react";
+import { CalendarIcon, MapPin, Users, DollarSign } from "lucide-react";
 import { EventFormData } from "@/types/event";
 import toast from "react-hot-toast";
 import { useCreateEvent } from "@/hooks/useEvents";
-import { useRouter } from "next/navigation";
+
+type FormDataWithImage = EventFormData & { image: FileList | null };
 
 export function CreateEventForm() {
   const { mutate, loading, error } = useCreateEvent();
-  const router = useRouter();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<EventFormData>();
+  } = useForm<FormDataWithImage>();
 
-  const onSubmit = async (data: EventFormData) => {
-    const imageFile =
-      data.image && data.image.length > 0 ? data.image[0] : null;
-    const eventData = {
-      title: data.title,
-      description: data.description,
+  const onSubmit = async (data: FormDataWithImage) => {
+    const payload = {
+      ...data,
       date: new Date(data.date).toISOString(),
-      maxAttendees: Number(data.maxAttendees),
-      price: Number(data.price),
-      address: data.address,
     };
 
-    // chamar a mutação para criar evento
-    const newEvent = await mutate(eventData, imageFile);
+    const newEvent = await mutate(payload);
 
-    // Verificar se criação do evento foi bem sucedida
     if (newEvent) {
       toast.success("Evento criado com sucesso!");
       reset();
-      router.push("/my-events");
     } else {
       toast.error(error || "Erro ao criar evento. Tente novamente.");
     }
@@ -60,6 +53,7 @@ export function CreateEventForm() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Basic Event Info */}
           <div className="space-y-4">
+            {/* ... Título e Descrição ... */}
             <div className="space-y-2">
               <Label htmlFor="title">Título do Evento *</Label>
               <Input
@@ -93,6 +87,17 @@ export function CreateEventForm() {
               )}
             </div>
 
+            {/* Campo de Imagem */}
+            <div className="space-y-2">
+              <Label htmlFor="image">Imagem do Evento (Opcional)</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/png, image/jpeg, image/webp"
+                {...register("image")}
+              />
+            </div>
+            {/* ... Data, Participantes e Preço ... */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date" className="flex items-center gap-2">
@@ -128,7 +133,7 @@ export function CreateEventForm() {
                   {...register("maxAttendees", {
                     required: "Número máximo é obrigatório",
                     min: { value: 1, message: "Mínimo 1 participante" },
-                    valueAsNumber: true,
+                    valueAsNumber: true, // Garante que o input seja tratado como number
                   })}
                   placeholder="100"
                   className={errors.maxAttendees ? "border-destructive" : ""}
@@ -153,7 +158,7 @@ export function CreateEventForm() {
                   {...register("price", {
                     required: "Preço é obrigatório",
                     min: { value: 0, message: "Preço não pode ser negativo" },
-                    valueAsNumber: true,
+                    valueAsNumber: true, // Garante que o input seja tratado como number
                   })}
                   placeholder="0.00"
                   className={errors.price ? "border-destructive" : ""}
@@ -164,21 +169,6 @@ export function CreateEventForm() {
                   </p>
                 )}
               </div>
-            </div>
-
-            {/* Campo de Upload de Imagem */}
-            <div className="space-y-2">
-              <Label htmlFor="image" className="flex items-center gap-1">
-                <Image className="h-4 w-4" />
-                Imagem do Evento (Opcional)
-              </Label>
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                {...register("image")}
-                className="file:text-sm file:font-medium"
-              />
             </div>
           </div>
 

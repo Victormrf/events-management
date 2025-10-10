@@ -9,6 +9,8 @@ import {
 import { CreateEventPayload, Event } from "@/types/event";
 import { useCallback, useEffect, useState } from "react";
 
+type EventMutationPayload = CreateEventPayload & { image: FileList | null };
+
 export function useEvents() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(false);
@@ -81,14 +83,12 @@ export function useCreateEvent() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const mutate = async (
-    payload: CreateEventPayload,
-    imageFile: File | null
-  ) => {
+  const mutate = async (payload: EventMutationPayload) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
     const token = getToken();
+
     if (!token) {
       setError("Token de autenticação não disponível.");
       setLoading(false);
@@ -96,7 +96,13 @@ export function useCreateEvent() {
     }
 
     try {
-      const newEvent = await createEvent(token, payload, imageFile);
+      const { image, ...eventData } = payload;
+      const imageFile = image ? image[0] : null;
+      const newEvent = await createEvent(token, {
+        ...eventData,
+        image: imageFile,
+      });
+
       setSuccess(true);
       return newEvent;
     } catch (err) {
@@ -105,7 +111,6 @@ export function useCreateEvent() {
       } else {
         setError("Erro desconhecido ao criar evento.");
       }
-      setSuccess(false);
     } finally {
       setLoading(false);
     }
@@ -122,7 +127,7 @@ export function useUpdateEvent() {
 
   const mutate = async (
     eventId: string,
-    payload: Partial<CreateEventPayload>
+    payload: Partial<EventMutationPayload>
   ) => {
     setLoading(true);
     setError(null);
@@ -135,7 +140,14 @@ export function useUpdateEvent() {
     }
 
     try {
-      const updatedEvent = await updateEvent(token, eventId, payload);
+      const { image, ...eventData } = payload;
+      const imageFile = image ? image[0] : undefined;
+
+      const updatedEvent = await updateEvent(token, eventId, {
+        ...eventData,
+        image: imageFile,
+      } as Partial<CreateEventPayload> & { image?: File | undefined });
+
       setSuccess(true);
       return updatedEvent;
     } catch (err) {
