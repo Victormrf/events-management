@@ -23,10 +23,7 @@ import { CloudinaryStorageService } from './cloudinary-storage.service';
 import { FileValidationPipe } from 'src/pipes/file-validation-pipe';
 import { MulterOptions } from 'multer';
 
-// Cria as opções do Multer usando o storage estático.
-// Isso resolve o erro de 'this' pois não dependemos da injeção do NestJS neste ponto.
 const multerOptions: MulterOptions = {
-  // Chamamos o método createStorage de forma estática, que usa a inicialização global/estática do Cloudinary.
   storage: CloudinaryStorageService.createStorage('events'),
 };
 
@@ -36,14 +33,13 @@ export class EventsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  // Usa o FileInterceptor com as opções de Multer definidas estaticamente
   @UseInterceptors(FileInterceptor('image', multerOptions))
   create(
     @UploadedFile(FileValidationPipe) file: any,
     @Body() createEventDto: CreateEventDto,
     @Request() req,
   ) {
-    const imageUrl = file?.path || null; // Pega a URL do Cloudinary (req.file.path)
+    const imageUrl = file?.path || null;
     return this.eventsService.create(createEventDto, req.user.id, imageUrl);
   }
 
@@ -77,7 +73,7 @@ export class EventsController {
     @Param('id') id: string,
     @Body() updateEventDto: UpdateEventDto,
   ) {
-    const imageUrl = file?.path || undefined; // Pega a URL do Cloudinary, pode ser undefined
+    const imageUrl = file?.path || undefined;
     return this.eventsService.update(id, updateEventDto, imageUrl);
   }
 

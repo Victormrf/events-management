@@ -1,8 +1,15 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Attendee } from '@prisma/client';
+import { CreateAddressDto } from './dto/create-address.dto';
+import { plainToInstance } from 'class-transformer';
+import { validate } from 'class-validator';
 
 @Injectable()
 export class EventsService {
@@ -13,6 +20,29 @@ export class EventsService {
     creatorId: string,
     imageUrl: string | null,
   ) {
+    let addressObject: CreateAddressDto;
+
+    try {
+      addressObject = JSON.parse(data.address);
+    } catch (e) {
+      throw new BadRequestException(
+        'O campo address deve ser um objeto JSON válido.' + e.message,
+      );
+    }
+
+    const addressDtoInstance = plainToInstance(CreateAddressDto, addressObject);
+    const errors = await validate(addressDtoInstance);
+
+    if (errors.length > 0) {
+      // Mapeia os erros para mensagens mais amigáveis
+      const errorMessages = errors.flatMap((error) =>
+        Object.values(error.constraints || {}),
+      );
+      throw new BadRequestException([
+        'Validação de endereço falhou.',
+        ...errorMessages,
+      ]);
+    }
     return this.prisma.event.create({
       data: {
         ...data,
@@ -24,7 +54,7 @@ export class EventsService {
           connect: { id: creatorId },
         },
         address: {
-          create: data.address, // Cria o endereço junto com o evento
+          create: addressObject, // Cria o endereço junto com o evento
         },
       },
     });
@@ -108,18 +138,35 @@ export class EventsService {
   }
 
   async update(id: string, data: UpdateEventDto, imageUrl: string | null) {
+    let addressUpdateData: any = {};
+    if (data.address && typeof data.address === 'string') {
+      try {
+        const parsedAddress = JSON.parse(data.address);
+        addressUpdateData = {
+          address: {
+            update: parsedAddress,
+          },
+        };
+      } catch (e) {
+        throw new BadRequestException(
+          'O campo address deve ser um objeto JSON válido para atualização.' +
+            e.message,
+        );
+      }
+    }
+
+    const imageUpdate = {
+      image: imageUrl === null ? null : imageUrl,
+    };
+
     return this.prisma.event.update({
       where: { id },
       data: {
         ...data,
         date: data.date ? new Date(data.date) : undefined,
         price: data.price !== undefined ? data.price.toFixed(2) : undefined,
-        ...(imageUrl !== null && { image: imageUrl }),
-        ...(data.address && {
-          address: {
-            update: data.address,
-          },
-        }),
+        ...(imageUrl !== undefined && imageUpdate),
+        ...addressUpdateData,
       },
     });
   }
