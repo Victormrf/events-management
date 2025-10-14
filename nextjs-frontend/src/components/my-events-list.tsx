@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
+import Image from "next/image";
 
 export function MyEventsList() {
   const { events, loading, error, refetch } = useMyEvents();
@@ -101,6 +102,18 @@ export function MyEventsList() {
             className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
           >
             <CardHeader className="space-y-3">
+              {/* Imagem do evento */}
+              <div className="w-full flex justify-center mb-2">
+                <Image
+                  src={event.image ? event.image : "/image-placeholder.png"}
+                  alt={event.title}
+                  width={400}
+                  height={300}
+                  className="rounded-md object-cover max-h-40 w-full"
+                  style={{ maxHeight: "240px", minHeight: "180px" }}
+                  priority={false}
+                />
+              </div>
               <div className="flex items-start justify-between">
                 <h3 className="font-semibold text-lg line-clamp-2">
                   {event.title}

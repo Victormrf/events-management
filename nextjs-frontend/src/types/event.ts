@@ -8,7 +8,7 @@ export type Event = {
   date: string;
   createdAt: string;
   maxAttendees?: number;
-  imageUrl?: string;
+  image?: string;
   price: string;
   address: Address;
   creator: User;

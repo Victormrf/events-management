@@ -26,6 +26,7 @@ import { format } from "date-fns";
 import { EditFormData, EventDetailsModalProps } from "@/types/event";
 import { useUpdateEvent } from "@/hooks/useEvents";
 import toast from "react-hot-toast";
+import Image from "next/image";
 
 export function EventDetailsModal({
   event,
@@ -39,13 +40,19 @@ export function EventDetailsModal({
     error: updateError,
   } = useUpdateEvent();
   const [isEditing, setIsEditing] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string>(event?.image || "");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<EditFormData>();
+    setValue,
+  } = useForm<EditFormData & { image?: FileList | null }>({
+    defaultValues: {
+      image: null,
+    },
+  });
 
   if (!event) return null;
 
@@ -66,7 +73,7 @@ export function EventDetailsModal({
 
   const handleEdit = () => {
     setIsEditing(true);
-    // Pre-fill form with current event data
+    setPreviewImage(event.image || "");
     reset({
       title: event.title,
       description: event.description,
@@ -81,15 +88,29 @@ export function EventDetailsModal({
         country: event.address.country,
         zipCode: event.address.zipCode || "",
       },
+      image: null,
     });
   };
 
   const handleCancelEdit = () => {
     setIsEditing(false);
     reset();
+    setPreviewImage(event.image || "");
   };
 
-  const onSubmit = async (data: EditFormData) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setValue("image", e.target.files);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const onSubmit = async (data: EditFormData & { image?: FileList | null }) => {
     const updateData = {
       title: data.title,
       description: data.description,
@@ -97,6 +118,7 @@ export function EventDetailsModal({
       maxAttendees: Number(data.maxAttendees),
       price: Number(data.price),
       address: data.address,
+      image: data.image,
     };
 
     await toast.promise(updateEvent(event.id, updateData), {
@@ -132,6 +154,19 @@ export function EventDetailsModal({
         {!isEditing ? (
           // View Mode
           <div className="space-y-6">
+            {/* Imagem do evento */}
+            {event.image && (
+              <div className="mb-4 flex justify-center">
+                <Image
+                  src={event.image}
+                  alt={event.title}
+                  className="rounded-lg max-h-64 object-cover"
+                  width={600}
+                  height={400}
+                />
+              </div>
+            )}
+
             <div className="space-y-4">
               <h2 className="text-2xl font-bold text-primary">{event.title}</h2>
               <Badge
@@ -199,6 +234,29 @@ export function EventDetailsModal({
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-6 text-muted-foreground"
           >
+            {/* Imagem preview e upload */}
+            <div className="space-y-2">
+              <Label htmlFor="edit-image">Imagem do Evento</Label>
+              {previewImage && (
+                <div className="mb-2 flex justify-center">
+                  <Image
+                    src={previewImage}
+                    alt="Preview"
+                    className="rounded-lg max-h-64 object-cover"
+                    width={600}
+                    height={400}
+                  />
+                </div>
+              )}
+              <Input
+                id="edit-image"
+                type="file"
+                accept="image/*"
+                {...register("image")}
+                onChange={handleImageChange}
+              />
+            </div>
+
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-title">Título *</Label>

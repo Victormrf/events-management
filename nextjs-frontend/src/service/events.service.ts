@@ -4,18 +4,12 @@ const serializeEventData = (
   payload: CreateEventPayload & { image?: File | null },
   formData: FormData
 ) => {
-  // 1. Campos simples e números (serializados para string)
   formData.append("title", payload.title);
   formData.append("description", payload.description);
   formData.append("date", payload.date);
   formData.append("maxAttendees", String(payload.maxAttendees));
   formData.append("price", String(payload.price));
-
-  // 2. Objeto aninhado 'address' (SERIALIZADO PARA JSON STRING)
-  // O backend espera que o objeto JSON complexo seja enviado como uma string.
   formData.append("address", JSON.stringify(payload.address));
-
-  // 3. Imagem
   if (payload.image) {
     formData.append("image", payload.image);
   }
