@@ -6,9 +6,10 @@ import { EventsModule } from './events/events.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { OrdersModule } from './orders/orders.module';
+import { GeocodingModule } from './geocoding/geocoding.module';
 
 @Module({
-  imports: [UsersModule, EventsModule, PrismaModule, AuthModule, OrdersModule],
+  imports: [UsersModule, EventsModule, PrismaModule, AuthModule, OrdersModule, GeocodingModule],
   controllers: [AppController],
   providers: [AppService],
 })

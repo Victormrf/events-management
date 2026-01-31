@@ -34,7 +34,6 @@ export class EventsService {
     const errors = await validate(addressDtoInstance);
 
     if (errors.length > 0) {
-      // Mapeia os erros para mensagens mais amigáveis
       const errorMessages = errors.flatMap((error) =>
         Object.values(error.constraints || {}),
       );
@@ -54,7 +53,7 @@ export class EventsService {
           connect: { id: creatorId },
         },
         address: {
-          create: addressObject, // Cria o endereço junto com o evento
+          create: addressObject,
         },
       },
     });
