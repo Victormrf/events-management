@@ -32,19 +32,19 @@ Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 
 {
-    "title": "Test event december",
+    "title": "Test event february",
     "description": "This is a another brand new test event",
-    "date": "2025-12-04T10:00:00Z",
+    "date": "2026-02-04T10:00:00Z",
     "maxAttendees": 2,
     "price": 25,
-    "address": {
-        "street": "street test",
-        "neighborhood": "neighborhood test",
-        "city": "city test",
-        "state": "state test",
-        "country": "country test",
-        "zipCode": "12345-678"
-    }
+    "address": "{
+        "street": "R. Luiz Moreira Guedes",
+        "neighborhood": "Bom Pastor",
+        "city": "Juiz de Fora",
+        "state": "Minas Gerais",
+        "country": "Brasil",
+        "zipCode": "36021-690"
+    }"
 }
 
 ###

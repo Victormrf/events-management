@@ -9,7 +9,14 @@ import { OrdersModule } from './orders/orders.module';
 import { GeocodingModule } from './geocoding/geocoding.module';
 
 @Module({
-  imports: [UsersModule, EventsModule, PrismaModule, AuthModule, OrdersModule, GeocodingModule],
+  imports: [
+    UsersModule,
+    EventsModule,
+    PrismaModule,
+    AuthModule,
+    OrdersModule,
+    GeocodingModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

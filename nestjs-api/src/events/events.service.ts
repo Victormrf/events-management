@@ -10,10 +10,14 @@ import { Attendee } from '@prisma/client';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { GeocodingService } from 'src/geocoding/geocoding.service';
 
 @Injectable()
 export class EventsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private geocodingService: GeocodingService,
+  ) {}
 
   async create(
     data: CreateEventDto,
@@ -42,6 +46,14 @@ export class EventsService {
         ...errorMessages,
       ]);
     }
+
+    const coords = await this.geocodingService.getCoordinates({
+      street: addressObject.street,
+      city: addressObject.city,
+      state: addressObject.state,
+      country: addressObject.country,
+    });
+
     return this.prisma.event.create({
       data: {
         ...data,
@@ -53,7 +65,11 @@ export class EventsService {
           connect: { id: creatorId },
         },
         address: {
-          create: addressObject,
+          create: {
+            ...addressObject,
+            lat: coords?.lat || null,
+            lng: coords?.lng || null,
+          },
         },
       },
     });
@@ -71,6 +87,8 @@ export class EventsService {
             state: true,
             country: true,
             zipCode: true,
+            lat: true,
+            lng: true,
           },
         },
         creator: { select: { name: true, email: true } },
@@ -141,9 +159,21 @@ export class EventsService {
     if (data.address && typeof data.address === 'string') {
       try {
         const parsedAddress = JSON.parse(data.address);
+
+        const coords = await this.geocodingService.getCoordinates({
+          street: parsedAddress.street,
+          city: parsedAddress.city,
+          state: parsedAddress.state,
+          country: parsedAddress.country,
+        });
+
         addressUpdateData = {
           address: {
-            update: parsedAddress,
+            update: {
+              ...parsedAddress,
+              lat: coords?.lat || null,
+              lng: coords?.lng || null,
+            },
           },
         };
       } catch (e) {
