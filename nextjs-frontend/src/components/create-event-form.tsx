@@ -12,11 +12,13 @@ import { CalendarIcon, MapPin, Users, DollarSign } from "lucide-react";
 import { EventFormData } from "@/types/event";
 import toast from "react-hot-toast";
 import { useCreateEvent } from "@/hooks/useEvents";
+import { useRouter } from "next/navigation";
 
 type FormDataWithImage = EventFormData & { image: FileList | null };
 
 export function CreateEventForm() {
   const { mutate, loading, error } = useCreateEvent();
+  const router = useRouter();
 
   const {
     register,
@@ -35,6 +37,7 @@ export function CreateEventForm() {
 
     if (newEvent) {
       toast.success("Evento criado com sucesso!");
+      router.push("/my-events");
       reset();
     } else {
       toast.error(error || "Erro ao criar evento. Tente novamente.");

@@ -18,6 +18,7 @@ import toast from "react-hot-toast";
 import { EventRegistrationModal } from "./event-registration-modal";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import Image from "next/image";
 
 type EventCardProps = {
   event: Event;
@@ -85,6 +86,17 @@ export function EventCard({
         onClick={() => (isExpanded ? onCollapse() : onExpand())}
       >
         <CardHeader className="space-y-3">
+          <div className="w-full flex justify-center mb-2">
+            <Image
+              src={event.image ? event.image : "/image-placeholder.png"}
+              alt={event.title}
+              width={400}
+              height={300}
+              className="rounded-md object-cover max-h-40 w-full"
+              style={{ maxHeight: "240px", minHeight: "180px" }}
+              priority={false}
+            />
+          </div>
           <div className="flex items-start justify-between">
             <h3 className="font-semibold text-lg group-hover:text-primary transition-colors line-clamp-2">
               {event.title}

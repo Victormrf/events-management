@@ -95,6 +95,8 @@ export function useCreateEvent() {
       return;
     }
 
+    console.log(payload);
+
     try {
       const { image, ...eventData } = payload;
       const imageFile = image ? image[0] : null;
@@ -127,7 +129,7 @@ export function useUpdateEvent() {
 
   const mutate = async (
     eventId: string,
-    payload: Partial<EventMutationPayload>
+    payload: Partial<EventMutationPayload>,
   ) => {
     setLoading(true);
     setError(null);

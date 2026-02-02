@@ -6,4 +6,6 @@ export type Address = {
   neighborhood?: string;
   street?: string;
   number?: string;
+  lat?: number;
+  lng?: number;
 };
