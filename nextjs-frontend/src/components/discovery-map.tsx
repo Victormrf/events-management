@@ -54,7 +54,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
     null,
   );
   const [isClient, setIsClient] = useState(false);
-  const [mapIcon, setMapIcon] = useState<any>(null);
+  const [mapIcon, setMapIcon] = useState<import("leaflet").Icon | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -106,7 +106,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
 
   if (!isClient || !userLocation || !mapIcon) {
     return (
-      <div className="flex h-[400px] w-full items-center justify-center rounded-lg border bg-muted">
+      <div className="flex h-[50vh] md:h-[70vh] lg:h-[80vh] w-full items-center justify-center rounded-lg border bg-muted">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2 text-sm text-muted-foreground">
           A carregar mapa...
@@ -128,7 +128,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
         </div>
       </div>
 
-      <div className="relative h-[400px] w-full overflow-hidden rounded-xl border shadow-inner">
+      <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-xl border shadow-inner">
         <MapContainer
           center={userLocation}
           zoom={13}

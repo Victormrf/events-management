@@ -95,8 +95,6 @@ export function useCreateEvent() {
       return;
     }
 
-    console.log(payload);
-
     try {
       const { image, ...eventData } = payload;
       const imageFile = image ? image[0] : null;
@@ -104,6 +102,8 @@ export function useCreateEvent() {
         ...eventData,
         image: imageFile,
       });
+
+      console.log("Novo ecentro criado:", newEvent);
 
       setSuccess(true);
       return newEvent;
