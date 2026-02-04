@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Event } from "@/types/event";
-import { Loader2, MapPin, Navigation, Info } from "lucide-react";
+import { Loader2, MapPin, Navigation, Info, ExternalLink } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 
 const MapContainer = dynamic(
@@ -60,13 +60,32 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
     setIsClient(true);
 
     import("leaflet").then((L) => {
+      const cssPrimary =
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--color-primary",
+        ) ||
+        getComputedStyle(document.documentElement).getPropertyValue(
+          "--primary",
+        ) ||
+        "#10B981";
+
+      const pinSvg = `
+        <svg xmlns='http://www.w3.org/2000/svg' width='36' height='48' viewBox='0 0 24 24' aria-hidden='true'>
+          <path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z' fill='${cssPrimary.trim()}'/>
+          <circle cx='12' cy='9' r='2.5' fill='white'/>
+        </svg>
+      `;
+
+      const svgUrl = `data:image/svg+xml;utf8,${encodeURIComponent(pinSvg)}`;
+
       const DefaultIcon = L.icon({
-        iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-        shadowUrl:
-          "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
+        iconUrl: svgUrl,
+        iconSize: [36, 48],
+        iconAnchor: [18, 48],
+        popupAnchor: [0, -40],
+        className: "leaflet-marker-icon-custom",
       });
+
       setMapIcon(DefaultIcon);
     });
 
@@ -132,19 +151,25 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
         <MapContainer
           center={userLocation}
           zoom={13}
-          scrollWheelZoom={false}
+          scrollWheelZoom={true}
           style={{ height: "100%", width: "100%" }}
         >
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
 
           {/* Marcador da posição do utilizador */}
           <Circle
             center={userLocation}
             radius={10000}
-            pathOptions={{ color: "blue", fillColor: "blue", fillOpacity: 0.1 }}
+            pathOptions={{
+              color: "#10b981",
+              fillColor: "#10b981",
+              fillOpacity: 0.05,
+              weight: 1,
+              dashArray: "8, 12",
+            }}
           />
 
           {/* Marcadores dos eventos próximos */}
@@ -154,25 +179,46 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
               position={[event.address.lat!, event.address.lng!]}
               icon={mapIcon}
             >
-              <Popup>
-                <div className="p-1">
-                  <h3 className="font-bold text-primary">{event.title}</h3>
-                  <p className="text-xs line-clamp-2 mt-1">
-                    {event.description}
-                  </p>
-                  <div className="mt-2 flex items-center justify-between">
-                    <span className="text-xs font-semibold">
-                      {event.price === "0" ? "Grátis" : `R$ ${event.price}`}
+              <Popup className="popup-dark">
+                <div className="p-4 flex flex-col gap-3">
+                  <div className="flex justify-between items-center text-slate-100">
+                    <span
+                      className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                        event.price === "0"
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : "bg-blue-500/20 text-blue-400"
+                      }`}
+                    >
+                      {event.price === "0"
+                        ? "Grátis"
+                        : `R$ ${Number(event.price).toFixed(2)}`}
                     </span>
-                    <button className="text-[10px] underline text-blue-600">
-                      Ver detalhes
-                    </button>
                   </div>
+
+                  <div>
+                    <h3 className="font-bold text-slate-100 text-sm leading-tight mb-1">
+                      {event.title}
+                    </h3>
+                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                      {event.description}
+                    </p>
+                  </div>
+
+                  <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-900/30 active:scale-[0.98]">
+                    Ver Detalhes
+                    <ExternalLink className="h-3 w-3" />
+                  </button>
                 </div>
               </Popup>
             </Marker>
           ))}
         </MapContainer>
+
+        {/* overlay de gradiente para aproximar o mapa ao fundo da aplicação; pointer-events: none para preservar interatividade */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 map-gradient-overlay"
+        />
       </div>
 
       {nearbyEvents.length === 0 && (
