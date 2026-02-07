@@ -73,7 +73,8 @@ export function EventCard({
       {/* Overlay de blur quando expandido */}
       {isExpanded && (
         <div
-          className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-all"
+          className="fixed inset-0 z-40 bg-black/10"
+          // className="fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-all"
           onClick={onCollapse}
         />
       )}

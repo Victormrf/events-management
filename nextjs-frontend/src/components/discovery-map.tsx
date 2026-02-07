@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, FormEvent, useRef } from "react";
 import dynamic from "next/dynamic";
 import { Event } from "@/types/event";
 import { Loader2, Info } from "lucide-react";
@@ -59,6 +59,11 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
   const [userIcon, setUserIcon] = useState<import("leaflet").Icon | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
+  const [mapInstance, setMapInstance] = useState<import("leaflet").Map | null>(
+    null,
+  );
+  const mapRef = useRef<import("leaflet").Map | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     setIsClient(true);
@@ -158,115 +163,166 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
     );
   }
 
+  const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!searchQuery) return;
+
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+          searchQuery,
+        )}&limit=1`,
+      );
+      const data = await res.json();
+      if (data && data.length > 0) {
+        const lat = parseFloat(data[0].lat);
+        const lon = parseFloat(data[0].lon);
+        if (mapInstance) mapInstance.setView([lat, lon], 13);
+      }
+    } catch (err) {
+      console.error("Geocoding error", err);
+    }
+  };
+
+  const handleMyLocation = () => {
+    if (mapInstance && userLocation) {
+      mapInstance.setView(userLocation, 13);
+    }
+  };
+
   return (
-    <div className="space-y-4">
+    <div>
       <style>{`
-        .leaflet-control {
-          z-index: 400 !important;
-        }
+        .leaflet-control { z-index: 400 !important; }
       `}</style>
 
-      <div
-        className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-xl border shadow-inner"
-        style={{ pointerEvents: selectedEvent ? "none" : "auto" }}
-      >
-        <MapContainer
-          center={userLocation}
-          zoom={13}
-          scrollWheelZoom={true}
-          style={{ height: "100%", width: "100%" }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Element 2: Map (left, spans 2 cols on md) */}
+        <div className="md:col-span-2">
+          <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-xl border shadow-inner">
+            <MapContainer
+              center={userLocation}
+              zoom={13}
+              scrollWheelZoom={true}
+              ref={mapRef as any}
+              whenReady={() => {
+                if (mapRef.current) setMapInstance(mapRef.current);
+              }}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              />
 
-          {/* Marcador da posição do utilizador */}
-          <Circle
-            center={userLocation}
-            radius={10000}
-            pathOptions={{
-              color: "#10b981",
-              fillColor: "#10b981",
-              fillOpacity: 0.05,
-              weight: 1,
-              dashArray: "8, 12",
-            }}
-          />
+              <Circle
+                center={userLocation}
+                radius={10000}
+                pathOptions={{
+                  color: "#10b981",
+                  fillColor: "#10b981",
+                  fillOpacity: 0.05,
+                  weight: 1,
+                  dashArray: "8, 12",
+                }}
+              />
 
-          {/* Marcador exato da posição do utilizador */}
-          <Marker position={userLocation} icon={userIcon}>
-            <Popup className="popup-dark">
-              <div className="p-3 flex flex-col gap-2">
-                <h3 className="font-bold text-slate-100 text-sm">
-                  Sua Posição
-                </h3>
-                <p className="text-xs text-slate-400">
-                  Latitude: {userLocation[0].toFixed(4)}
-                </p>
-                <p className="text-xs text-slate-400">
-                  Longitude: {userLocation[1].toFixed(4)}
+              <Marker position={userLocation} icon={userIcon}>
+                <Popup className="popup-dark">
+                  <div className="p-3 flex flex-col gap-2">
+                    <h3 className="font-bold text-slate-100 text-sm">
+                      Sua Posição
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Latitude: {userLocation[0].toFixed(4)}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      Longitude: {userLocation[1].toFixed(4)}
+                    </p>
+                  </div>
+                </Popup>
+              </Marker>
+
+              {nearbyEvents.map((event) => (
+                <Marker
+                  key={event.id}
+                  position={[event.address.lat!, event.address.lng!]}
+                  icon={mapIcon}
+                  eventHandlers={{
+                    click: () => {
+                      setSelectedEvent(event);
+                      setExpandedEvent(event.id);
+                    },
+                  }}
+                />
+              ))}
+            </MapContainer>
+
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 map-gradient-overlay"
+            />
+          </div>
+
+          {nearbyEvents.length === 0 && (
+            <div className="flex items-center gap-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800 border border-yellow-200 mt-3">
+              <Info className="h-4 w-4" />
+              Nenhum evento encontrado num raio de 10km.
+            </div>
+          )}
+        </div>
+
+        {/* Right column: search form (3) and event panel (4) */}
+        <div className="md:col-span-1 flex flex-col gap-4">
+          {/* Element 3: simple location search form */}
+          <form
+            onSubmit={handleSearch}
+            className="rounded-xl border p-4 bg-card shadow-sm"
+          >
+            <label className="text-lg font-medium mb-2 block">
+              Insira uma outra localização
+            </label>
+            <div className="flex gap-2">
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Endereço, cidade ou coordenadas"
+                className="flex-1 bg-background border border-input rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary"
+                aria-label="Buscar localização"
+              />
+              <button
+                className="bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white font-semibold px-5 py-2 rounded-md transition-colors"
+                type="submit"
+              >
+                Buscar
+              </button>
+            </div>
+            <div className="mt-2 text-sm text-muted-foreground flex gap-2">
+              <button
+                type="button"
+                onClick={handleMyLocation}
+                className="text-primary underline"
+              >
+                Usar Minha localização
+              </button>
+            </div>
+          </form>
+
+          {/* Element 4: event panel */}
+          <div className="rounded-xl border p-4 bg-card shadow-sm min-h-[200px]">
+            {!selectedEvent ? (
+              <div className="flex flex-col items-start gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-full bg-primary/10">
+                    <Info className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="font-semibold">Detalhes do evento</h3>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Selecione um evento no mapa para ver mais detalhes aqui.
                 </p>
               </div>
-            </Popup>
-          </Marker>
-
-          {/* Marcadores dos eventos próximos */}
-          {nearbyEvents.map((event) => (
-            <Marker
-              key={event.id}
-              position={[event.address.lat!, event.address.lng!]}
-              icon={mapIcon}
-              eventHandlers={{
-                click: () => {
-                  setSelectedEvent(event);
-                  setExpandedEvent(event.id);
-                },
-              }}
-            />
-          ))}
-        </MapContainer>
-
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 map-gradient-overlay"
-        />
-      </div>
-
-      {nearbyEvents.length === 0 && (
-        <div className="flex items-center gap-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800 border border-yellow-200">
-          <Info className="h-4 w-4" />
-          Nenhum evento encontrado num raio de 10km.
-        </div>
-      )}
-
-      {/* Modal para exibir o EventCard */}
-      {selectedEvent && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
-          {/* Overlay */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[998]"
-            onClick={() => {
-              setSelectedEvent(null);
-              setExpandedEvent(null);
-            }}
-          />
-
-          {/* Modal wrapper com bordas e controle de overflow */}
-          <div className="relative z-[999] max-w-2xl w-full bg-background rounded-lg border shadow-lg overflow-hidden">
-            {/* Close button dentro do modal */}
-            <button
-              onClick={() => {
-                setSelectedEvent(null);
-                setExpandedEvent(null);
-              }}
-              className="absolute top-3 right-3 z-[1000] w-8 h-8 flex items-center justify-center rounded-full bg-primary hover:bg-primary/90 hover:cursor-pointer text-white transition-colors"
-            >
-              ✕
-            </button>
-
-            {/* Modal content */}
-            <div className="max-h-[90vh] overflow-hidden">
+            ) : (
               <EventCard
                 event={selectedEvent}
                 isExpanded={expandedEvent === selectedEvent.id}
@@ -274,10 +330,10 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
                 onCollapse={() => setExpandedEvent(null)}
                 isDimmed={false}
               />
-            </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
