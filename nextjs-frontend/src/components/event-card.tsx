@@ -81,7 +81,7 @@ export function EventCard({
       <Card
         className={cn(
           "relative z-50 group cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.02] hover:border-primary/50 hover:border-3",
-          isDimmed && "opacity-40 blur-[2px] pointer-events-none"
+          isDimmed && "opacity-40 blur-[2px] pointer-events-none",
         )}
         onClick={() => (isExpanded ? onCollapse() : onExpand())}
       >
@@ -183,10 +183,17 @@ export function EventCard({
 
               {/* Action buttons */}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1" onClick={handleRegisterClick}>
+                <Button
+                  className="flex-1 hover:cursor-pointer"
+                  onClick={handleRegisterClick}
+                >
                   Register Now
                 </Button>
-                <Button variant="outline" onClick={(e) => e.stopPropagation()}>
+                <Button
+                  variant="outline"
+                  className="hover:cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   Share
                 </Button>
               </div>

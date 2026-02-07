@@ -3,7 +3,8 @@
 import { useEffect, useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { Event } from "@/types/event";
-import { Loader2, MapPin, Navigation, Info, ExternalLink } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
+import { EventCard } from "./event-card";
 import "leaflet/dist/leaflet.css";
 
 const MapContainer = dynamic(
@@ -55,6 +56,9 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
   );
   const [isClient, setIsClient] = useState(false);
   const [mapIcon, setMapIcon] = useState<import("leaflet").Icon | null>(null);
+  const [userIcon, setUserIcon] = useState<import("leaflet").Icon | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -87,6 +91,26 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
       });
 
       setMapIcon(DefaultIcon);
+
+      const userSvg = `
+        <svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' aria-hidden='true'>
+          <circle cx='12' cy='12' r='8' fill='#51ee9c' opacity='0.2'/>
+          <circle cx='12' cy='12' r='5' fill='#51ee9c'/>
+          <circle cx='12' cy='12' r='2.5' fill='white'/>
+        </svg>
+      `;
+
+      const userSvgUrl = `data:image/svg+xml;utf8,${encodeURIComponent(userSvg)}`;
+
+      const UserIcon = L.icon({
+        iconUrl: userSvgUrl,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -25],
+        className: "leaflet-marker-icon-user",
+      });
+
+      setUserIcon(UserIcon);
     });
 
     // Obter localização do utilizador
@@ -123,7 +147,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
     });
   }, [events, userLocation]);
 
-  if (!isClient || !userLocation || !mapIcon) {
+  if (!isClient || !userLocation || !mapIcon || !userIcon) {
     return (
       <div className="flex h-[50vh] md:h-[70vh] lg:h-[80vh] w-full items-center justify-center rounded-lg border bg-muted">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -136,18 +160,16 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold">Eventos Próximos</h2>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Navigation className="h-3 w-3" />
-          <span>Raio de 10km da sua posição</span>
-        </div>
-      </div>
+      <style>{`
+        .leaflet-control {
+          z-index: 400 !important;
+        }
+      `}</style>
 
-      <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-xl border shadow-inner">
+      <div
+        className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-xl border shadow-inner"
+        style={{ pointerEvents: selectedEvent ? "none" : "auto" }}
+      >
         <MapContainer
           center={userLocation}
           zoom={13}
@@ -172,49 +194,39 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
             }}
           />
 
+          {/* Marcador exato da posição do utilizador */}
+          <Marker position={userLocation} icon={userIcon}>
+            <Popup className="popup-dark">
+              <div className="p-3 flex flex-col gap-2">
+                <h3 className="font-bold text-slate-100 text-sm">
+                  Sua Posição
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Latitude: {userLocation[0].toFixed(4)}
+                </p>
+                <p className="text-xs text-slate-400">
+                  Longitude: {userLocation[1].toFixed(4)}
+                </p>
+              </div>
+            </Popup>
+          </Marker>
+
           {/* Marcadores dos eventos próximos */}
           {nearbyEvents.map((event) => (
             <Marker
               key={event.id}
               position={[event.address.lat!, event.address.lng!]}
               icon={mapIcon}
-            >
-              <Popup className="popup-dark">
-                <div className="p-4 flex flex-col gap-3">
-                  <div className="flex justify-between items-center text-slate-100">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-                        event.price === "0"
-                          ? "bg-emerald-500/20 text-emerald-400"
-                          : "bg-blue-500/20 text-blue-400"
-                      }`}
-                    >
-                      {event.price === "0"
-                        ? "Grátis"
-                        : `R$ ${Number(event.price).toFixed(2)}`}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="font-bold text-slate-100 text-sm leading-tight mb-1">
-                      {event.title}
-                    </h3>
-                    <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
-                      {event.description}
-                    </p>
-                  </div>
-
-                  <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-900/30 active:scale-[0.98]">
-                    Ver Detalhes
-                    <ExternalLink className="h-3 w-3" />
-                  </button>
-                </div>
-              </Popup>
-            </Marker>
+              eventHandlers={{
+                click: () => {
+                  setSelectedEvent(event);
+                  setExpandedEvent(event.id);
+                },
+              }}
+            />
           ))}
         </MapContainer>
 
-        {/* overlay de gradiente para aproximar o mapa ao fundo da aplicação; pointer-events: none para preservar interatividade */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 map-gradient-overlay"
@@ -225,6 +237,45 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
         <div className="flex items-center gap-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800 border border-yellow-200">
           <Info className="h-4 w-4" />
           Nenhum evento encontrado num raio de 10km.
+        </div>
+      )}
+
+      {/* Modal para exibir o EventCard */}
+      {selectedEvent && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm z-[998]"
+            onClick={() => {
+              setSelectedEvent(null);
+              setExpandedEvent(null);
+            }}
+          />
+
+          {/* Modal wrapper com bordas e controle de overflow */}
+          <div className="relative z-[999] max-w-2xl w-full bg-background rounded-lg border shadow-lg overflow-hidden">
+            {/* Close button dentro do modal */}
+            <button
+              onClick={() => {
+                setSelectedEvent(null);
+                setExpandedEvent(null);
+              }}
+              className="absolute top-3 right-3 z-[1000] w-8 h-8 flex items-center justify-center rounded-full bg-primary hover:bg-primary/90 hover:cursor-pointer text-white transition-colors"
+            >
+              ✕
+            </button>
+
+            {/* Modal content */}
+            <div className="max-h-[90vh] overflow-hidden">
+              <EventCard
+                event={selectedEvent}
+                isExpanded={expandedEvent === selectedEvent.id}
+                onExpand={() => setExpandedEvent(selectedEvent.id)}
+                onCollapse={() => setExpandedEvent(null)}
+                isDimmed={false}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>
