@@ -64,6 +64,9 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
   );
   const mapRef = useRef<import("leaflet").Map | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchLocation, setSearchLocation] = useState<[number, number] | null>(
+    null,
+  );
 
   useEffect(() => {
     setIsClient(true);
@@ -139,18 +142,26 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
 
   // Filtrar eventos num raio de 10km
   const nearbyEvents = useMemo(() => {
-    if (!userLocation) return [];
+    const referenceLocation = searchLocation || userLocation;
+    if (!referenceLocation) return [];
     return events.filter((event) => {
       if (!event.address.lat || !event.address.lng) return false;
       const dist = calculateDistance(
-        userLocation[0],
-        userLocation[1],
+        referenceLocation[0],
+        referenceLocation[1],
         event.address.lat,
         event.address.lng,
       );
       return dist <= 10;
     });
-  }, [events, userLocation]);
+  }, [events, userLocation, searchLocation]);
+
+  // Recentrar mapa quando a localização de busca muda
+  useEffect(() => {
+    if (searchLocation && mapRef.current) {
+      mapRef.current.setView(searchLocation, 13);
+    }
+  }, [searchLocation]);
 
   if (!isClient || !userLocation || !mapIcon || !userIcon) {
     return (
@@ -177,7 +188,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
       if (data && data.length > 0) {
         const lat = parseFloat(data[0].lat);
         const lon = parseFloat(data[0].lon);
-        if (mapInstance) mapInstance.setView([lat, lon], 13);
+        setSearchLocation([lat, lon]);
       }
     } catch (err) {
       console.error("Geocoding error", err);
@@ -186,6 +197,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
 
   const handleMyLocation = () => {
     if (mapInstance && userLocation) {
+      setSearchLocation(null);
       mapInstance.setView(userLocation, 13);
     }
   };
@@ -201,7 +213,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
         <div className="md:col-span-2">
           <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-xl border shadow-inner">
             <MapContainer
-              center={userLocation}
+              center={searchLocation || userLocation}
               zoom={13}
               scrollWheelZoom={true}
               ref={mapRef as any}
@@ -216,7 +228,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
               />
 
               <Circle
-                center={userLocation}
+                center={searchLocation || userLocation}
                 radius={10000}
                 pathOptions={{
                   color: "#10b981",
@@ -227,17 +239,18 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
                 }}
               />
 
-              <Marker position={userLocation} icon={userIcon}>
+              <Marker position={searchLocation || userLocation} icon={userIcon}>
                 <Popup className="popup-dark">
                   <div className="p-3 flex flex-col gap-2">
                     <h3 className="font-bold text-slate-100 text-sm">
-                      Sua Posição
+                      {searchLocation ? "Localização de Busca" : "Sua Posição"}
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Latitude: {userLocation[0].toFixed(4)}
+                      Latitude: {(searchLocation || userLocation)[0].toFixed(4)}
                     </p>
                     <p className="text-xs text-slate-400">
-                      Longitude: {userLocation[1].toFixed(4)}
+                      Longitude:{" "}
+                      {(searchLocation || userLocation)[1].toFixed(4)}
                     </p>
                   </div>
                 </Popup>
