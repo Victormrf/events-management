@@ -37,4 +37,34 @@ export class GeocodingService {
       return null;
     }
   }
+
+  async getCoordinatesByQuery(
+    query: string,
+  ): Promise<{ lat: number; lng: number } | null> {
+    const url = `${this.baseUrl}?format=json&q=${encodeURIComponent(query)}&limit=1`;
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'XploreHub-Portfolio-App',
+        },
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+
+      if (data && data.length > 0) {
+        return {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon),
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Erro na Geocodificação Nominatim:', error.message);
+      return null;
+    }
+  }
 }

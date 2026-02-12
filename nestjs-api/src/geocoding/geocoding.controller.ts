@@ -33,4 +33,23 @@ export class GeocodingController {
 
     return coords;
   }
+
+  @Get('search-by-query')
+  async searchCoordinatesByQuery(@Query('query') query: string) {
+    if (!query) {
+      throw new BadRequestException(
+        'O campo de consulta é obrigatório para a busca.',
+      );
+    }
+
+    const coords = await this.geocodingService.getCoordinatesByQuery(query);
+
+    if (!coords) {
+      throw new BadRequestException(
+        'Não foi possível encontrar as coordenadas para esta consulta.',
+      );
+    }
+
+    return coords;
+  }
 }
