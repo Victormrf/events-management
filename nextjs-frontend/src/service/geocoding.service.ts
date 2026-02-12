@@ -1,19 +1,9 @@
-import { Address } from "@/types/address";
 import { Coordinates } from "@/types/coordinates";
 
-export const getCoordinates = async (
-  location: Address,
-): Promise<Coordinates[]> => {
+export const getCoordinates = async (query: string): Promise<Coordinates[]> => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/geocoding/search`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(location),
-      },
+      `${process.env.NEXT_PUBLIC_API_URL}/geocoding/search-by-query?query=${encodeURIComponent(query)}`,
     );
 
     if (!response.ok) {

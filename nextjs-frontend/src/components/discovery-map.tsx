@@ -6,6 +6,7 @@ import { Event } from "@/types/event";
 import { Loader2, Info } from "lucide-react";
 import { EventCard } from "./event-card";
 import "leaflet/dist/leaflet.css";
+import { useCoordinates } from "@/hooks/useGeocoding";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -67,6 +68,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(
     null,
   );
+  const { fetchCoordinates, coordinates, loading, error } = useCoordinates();
 
   useEffect(() => {
     setIsClient(true);
@@ -163,6 +165,15 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
     }
   }, [searchLocation]);
 
+  // Atualizar localização de busca quando as coordenadas forem carregadas
+  useEffect(() => {
+    if (coordinates && coordinates.length > 0) {
+      const lat = coordinates[0].lat;
+      const lng = coordinates[0].lng;
+      setSearchLocation([lat, lng]);
+    }
+  }, [coordinates]);
+
   if (!isClient || !userLocation || !mapIcon || !userIcon) {
     return (
       <div className="flex h-[50vh] md:h-[70vh] lg:h-[80vh] w-full items-center justify-center rounded-lg border bg-muted">
@@ -178,21 +189,7 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
     e.preventDefault();
     if (!searchQuery) return;
 
-    try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          searchQuery,
-        )}&limit=1`,
-      );
-      const data = await res.json();
-      if (data && data.length > 0) {
-        const lat = parseFloat(data[0].lat);
-        const lon = parseFloat(data[0].lon);
-        setSearchLocation([lat, lon]);
-      }
-    } catch (err) {
-      console.error("Geocoding error", err);
-    }
+    fetchCoordinates(searchQuery);
   };
 
   const handleMyLocation = () => {
@@ -304,10 +301,15 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
                 aria-label="Buscar localização"
               />
               <button
-                className="bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white font-semibold px-5 py-2 rounded-md transition-colors"
+                className="bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white font-semibold px-5 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 type="submit"
+                disabled={loading}
               >
-                Buscar
+                {loading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  "Buscar"
+                )}
               </button>
             </div>
             <div className="mt-2 text-sm text-muted-foreground flex gap-2">
@@ -319,6 +321,12 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
                 Usar Minha localização
               </button>
             </div>
+            {error && (
+              <div className="mt-3 flex items-center gap-2 rounded-md bg-red-50 p-2 text-sm text-red-700 border border-red-200">
+                <Info className="h-4 w-4" />
+                {error}
+              </div>
+            )}
           </form>
 
           {/* Element 4: event panel */}

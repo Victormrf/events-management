@@ -1,5 +1,4 @@
 import { getCoordinates } from "@/service/geocoding.service";
-import { Address } from "@/types/address";
 import { Coordinates } from "@/types/coordinates";
 import { useState } from "react";
 
@@ -8,11 +7,13 @@ export function useCoordinates() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchCoordinates = async (location: Address) => {
+  const fetchCoordinates = async (query: string) => {
     try {
       setLoading(true);
-      const coordinates = await getCoordinates(location);
-      setCoordinates(coordinates);
+      setError(null);
+      const result = await getCoordinates(query);
+      setCoordinates(result);
+      console.log("coordenadas retornadas:", result);
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
