@@ -3,8 +3,8 @@ POST http://localhost:3000/auth/register
 Content-Type: application/json
 
 {
-    "name": "Victor Admin",
-    "email": "vmrf2000@hotmail.com",
+    "name": "Admin",
+    "email": "admin@xplorehub.com",
     "password": "test1234",
     "role": "ADMIN"
 }
@@ -15,7 +15,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-    "email": "vmrf2000@hotmail.com",
+    "email": "admin@xplorehub.com",
     "password": "test1234"
 }
 ###
@@ -53,6 +53,9 @@ Content-Type: application/json
 ###
 GET http://localhost:3000/events
 Authorization: Bearer {{jwt_token}}
+
+###
+GET http://localhost:3000/events/by-city/Juiz de Fora
 
 ###
 GET http://localhost:3000/events/{{event_id}}

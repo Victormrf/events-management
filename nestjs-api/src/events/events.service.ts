@@ -154,6 +154,40 @@ export class EventsService {
     return eventWithAttendees.orders.flatMap((order) => order.attendees);
   }
 
+  async findAllByCity(city: string) {
+    const events = await this.prisma.event.findMany({
+      where: {
+        address: {
+          city: {
+            equals: city.trim(),
+            mode: 'insensitive',
+          },
+        },
+      },
+      include: {
+        address: {
+          select: {
+            street: true,
+            neighborhood: true,
+            city: true,
+            state: true,
+            country: true,
+            zipCode: true,
+            lat: true,
+            lng: true,
+          },
+        },
+        creator: { select: { name: true, email: true } },
+      },
+    });
+
+    if (!events || events.length === 0) {
+      throw new NotFoundException('Nenhum evento encontrado para esta cidade');
+    }
+
+    return events;
+  }
+
   async update(id: string, data: UpdateEventDto, imageUrl: string | null) {
     let addressUpdateData: any = {};
     if (data.address && typeof data.address === 'string') {

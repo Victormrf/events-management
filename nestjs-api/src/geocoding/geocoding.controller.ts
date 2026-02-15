@@ -1,9 +1,15 @@
 import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
 import { GeocodingService } from './geocoding.service';
+import { AiSeedService } from 'src/seed/seed.service';
+import { EventsService } from 'src/events/events.service';
 
 @Controller('geocoding')
 export class GeocodingController {
-  constructor(private readonly geocodingService: GeocodingService) {}
+  constructor(
+    private readonly geocodingService: GeocodingService,
+    private readonly aiSeedService: AiSeedService,
+    private readonly eventsService: EventsService,
+  ) {}
 
   @Get('search')
   async searchCoordinates(
@@ -51,5 +57,20 @@ export class GeocodingController {
     }
 
     return coords;
+  }
+
+  @Get('nearby')
+  async getNearbyEvents(
+    @Query('city') city: string,
+    @Query('state') state: string,
+    @Query('country') country: string,
+  ) {
+    const events = await this.eventsService.findAllByCity(city);
+
+    if (events.length === 0) {
+      return this.aiSeedService.seedEventsForLocation(city, state, country);
+    }
+
+    return events;
   }
 }

@@ -11,7 +11,7 @@ export class UsersService {
     return this.prisma.user.create({
       data: {
         ...data,
-        role: data.role || Role.USER, // Assume ROLE.USER por padrão
+        role: data.role || Role.USER,
       },
     });
   }

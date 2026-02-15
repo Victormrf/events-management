@@ -54,6 +54,11 @@ export class EventsController {
     return this.eventsService.findAll();
   }
 
+  @Get('by-city/:city')
+  findAllByCity(@Param('city') city: string) {
+    return this.eventsService.findAllByCity(city);
+  }
+
   @Get(':id')
   findById(@Param('id') id: string) {
     return this.eventsService.findById(id);
