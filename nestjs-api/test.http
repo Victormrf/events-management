@@ -66,21 +66,12 @@ GET http://localhost:3000/events/my-events
 Authorization: Bearer {{jwt_token}}
 
 ###
-PATCH  http://localhost:3000/events/{{event_id}}       
+PATCH  http://localhost:3000/events/e4cbd249-d750-4899-b616-300dc123db64       
 Authorization: Bearer {{jwt_token}}
 Content-Type: application/json
 
 {
-  "description": "This is a new test event",
-  "price": 20.60,
-  "address": {
-    "street": "new street test",
-    "neighborhood": "new neighborhood test",
-    "city": "new city test",
-    "state": "new state test",
-    "country": "new country test",
-    "zipCode": "98765-432"
-  }
+  "image": "https://images.unsplash.com/photo-1533551268962-824e232f7ee1?auto=format&fit=crop&w=1200&q=80"
 }
 
 ###
@@ -137,8 +128,8 @@ POST http://localhost:3000/seed/generateSeedEvents
 Content-Type: application/json
 
 {
-    "city": "Juiz de Fora",
-    "state": "Minas Gerais",
+    "city": "São Paulo",
+    "state": "São Paulo",
     "country": "Brasil"
 }
 ###

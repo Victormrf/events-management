@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { Injectable } from '@nestjs/common';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { EventsService } from 'src/events/events.service';
 
 @Injectable()
@@ -7,39 +8,42 @@ export class AiSeedService {
   private readonly apiKey = process.env.GEMINI_API_KEY;
 
   private readonly PROVEN_MODELS = [
-    'gemini-2.5-flash', // Principal: Melhor equilíbrio entre inteligência e velocidade
-    'gemini-2.5-flash-lite', // Fallback 1: Otimizado para latência e volume
-    'gemini-2.0-flash', // Fallback 2: Versão estável anterior
-    'gemini-2.0-flash-lite', // Fallback 3: Ultra-rápido
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemini-2.0-flash',
   ];
 
-  private readonly STATIC_FALLBACKS = [
-    {
-      title: 'Juiz de Fora Tech Meetup',
-      description:
-        'Networking e palestras sobre o ecossistema de tecnologia em MG.',
-      street: 'Rua Halfeld',
-    },
-    {
-      title: 'Samba na Praça',
-      description:
-        'Evento cultural gratuito com músicos locais e gastronomia típica.',
-      street: 'Praça da Estação',
-    },
-    {
-      title: 'Workshop de Gastronomia Mineira',
-      description: 'Aprenda os segredos do pão de queijo e doces tradicionais.',
-      street: 'Avenida Rio Branco',
-    },
-  ];
+  private readonly CATEGORY_IMAGES = {
+    tech: [
+      'photo-1518770660439-4636190af475', // Circuitos
+      'photo-1550751827-4bd374c3f58b', // Segurança Digital
+      'photo-1519389950473-47ba0277781c', // Trabalho em equipe Tech
+    ],
+    music: [
+      'photo-1514525253361-bee87184919a', // Concerto/Show
+      'photo-1470225620780-dba8ba36b745', // DJ/Música Eletrônica
+      'photo-1511671782779-c97d3d27a1d4', // Microfone/Jazz
+    ],
+    food: [
+      'photo-1504674900247-0877df9cc836', // Prato Gourmet
+      'photo-1555939594-58d7cb561ad1', // Churrasco/Grelha
+      'photo-1414235077428-338989a2e8c0', // Restaurante Fino
+    ],
+    party: [
+      'photo-1492684223066-81342ee5ff30', // Celebração
+      'photo-1516450360452-9312f5e86fc7', // Balada/Luzes
+      'photo-1533174072545-7a4b6ad7a6c3', // Noite de festa
+    ],
+    culture: [
+      'photo-1460661419201-fd4cecdf8a8b', // Arte/Pintura
+      'photo-1533105079780-92b9be482077', // Festival de Rua
+      'photo-1533551268962-824e232f7ee1', // Arquitetura/História
+    ],
+  };
 
-  constructor(
-    private eventsService: EventsService,
-    private cloudinaryService: CloudinaryService,
-  ) {}
+  constructor(private eventsService: EventsService) {}
 
   async listAvailableModels() {
-    console.log('[DEBUG] Consultando modelos disponíveis via ListModels...');
     const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${this.apiKey}`;
 
     try {
@@ -65,76 +69,57 @@ export class AiSeedService {
   private async tryGenerateWithFallbackModels(prompt: string) {
     for (const modelId of this.PROVEN_MODELS) {
       try {
-        console.log(`[SEED] Tentando modelo: ${modelId}...`);
-
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${this.apiKey}`;
-
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-          }),
+          body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
         });
 
         const result = await response.json();
-
         if (response.ok && result.candidates?.[0]?.content?.parts?.[0]?.text) {
-          console.log(`[SEED] Sucesso com o modelo: ${modelId}`);
           return result.candidates[0].content.parts[0].text;
         }
-
-        console.warn(
-          `[SEED] Modelo ${modelId} falhou:`,
-          result.error?.message || 'Erro de resposta',
-        );
       } catch (e) {
-        console.error(
-          `[SEED] Erro de rede com o modelo ${modelId}:`,
-          e.message,
-        );
         continue;
       }
     }
-    throw new Error(
-      'Nenhum modelo compatível da lista PROVEN_MODELS aceitou a requisição.',
-    );
+    throw new Error('Nenhum modelo disponível aceitou a requisição.');
   }
 
   async seedEventsForLocation(city: string, state: string, country: string) {
     let eventsData;
 
     try {
-      const prompt = `Gere um array JSON com 3 eventos fictícios realistas para ${city}, ${state}.
-      Use nomes de ruas reais. Formato: [{"title": "...", "description": "...", "street": "..."}]
-      Retorne APENAS o JSON puro dentro de blocos de código markdown.`;
+      const prompt = `Gere um array JSON com 5 eventos fictícios realistas para ${city}, ${state}, ${country}.
+      Use nomes de ruas reais. Retorne um JSON puro: [{"title": "...", "description": "...", "street": "...", "category": "tech ou music ou food ou party ou culture"}]`;
 
       const rawResponse = await this.tryGenerateWithFallbackModels(prompt);
-
       const jsonMatch =
         rawResponse.match(/```json\s*([\s\S]*?)\s*```/) ||
         rawResponse.match(/\[\s*\{[\s\S]*\}\s*\]/);
-      const cleanJson = jsonMatch
-        ? Array.isArray(jsonMatch)
-          ? jsonMatch[1] || jsonMatch[0]
-          : jsonMatch
+      const jsonString = Array.isArray(jsonMatch)
+        ? jsonMatch[1] || jsonMatch[0]
         : rawResponse;
-
-      eventsData = JSON.parse(cleanJson.trim());
+      eventsData = JSON.parse(jsonString.trim());
     } catch (error) {
       console.error(
-        `[SEED] Falha total na IA: ${error.message}. Usando dados estáticos.`,
+        `[SEED] Erro na geração automatica de eventos: ${error.message}`,
       );
-      eventsData = this.STATIC_FALLBACKS;
     }
 
     const createdEvents = [];
 
     for (const eventInfo of eventsData) {
       try {
-        const keywords = encodeURIComponent(`${eventInfo.title},party,event`);
-        const randomSeed = Math.floor(Math.random() * 1000);
-        const imageUrl = `https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?q=80&w=1000&auto=format&fit=crop&sig=${randomSeed}&keywords=${keywords}`;
+        const categoryKey = (eventInfo.category || 'party').toLowerCase();
+        const availableImages =
+          this.CATEGORY_IMAGES[categoryKey] || this.CATEGORY_IMAGES.party;
+
+        const imageId =
+          availableImages[Math.floor(Math.random() * availableImages.length)];
+
+        const imageUrl = `https://images.unsplash.com/${imageId}?auto=format&fit=crop&w=1200&q=80`;
 
         const creatorId = 'c7309829-6500-445b-a3b5-bc48db4cd8e3';
 
@@ -162,11 +147,11 @@ export class AiSeedService {
           imageUrl,
         );
         createdEvents.push(newEvent);
-        console.log(`[SEED] Evento criado com sucesso: ${eventInfo.title}`);
-      } catch (error) {
-        console.error(
-          `[SEED] Erro ao salvar evento no banco: ${error.message}`,
+        console.log(
+          `[SEED] Sucesso: Evento "${eventInfo.title}" criado com imagem curada da categoria ${categoryKey}.`,
         );
+      } catch (error) {
+        console.error(`[SEED] Erro ao salvar: ${error.message}`);
       }
     }
 
