@@ -1,12 +1,19 @@
 "use client";
 
-import { useEffect, useState, useMemo, FormEvent, useRef } from "react";
+import {
+  useEffect,
+  useState,
+  useMemo,
+  FormEvent,
+  useRef,
+  useCallback,
+} from "react";
 import dynamic from "next/dynamic";
 import { Event } from "@/types/event";
-import { Loader2, Info } from "lucide-react";
+import { Loader2, Info, Sparkles, Navigation, MapPinIcon } from "lucide-react";
 import { EventCard } from "./event-card";
 import "leaflet/dist/leaflet.css";
-import { useCoordinates } from "@/hooks/useGeocoding";
+import { useCoordinates, useEventSeed } from "@/hooks/useGeocoding";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
@@ -49,9 +56,13 @@ function calculateDistance(
 
 interface DiscoveryMapProps {
   events: Event[];
+  onEventsUpdated?: (newEvents: Event[]) => void;
 }
 
-export default function DiscoveryMap({ events }: DiscoveryMapProps) {
+export default function DiscoveryMap({
+  events,
+  onEventsUpdated,
+}: DiscoveryMapProps) {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(
     null,
   );
@@ -68,59 +79,45 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(
     null,
   );
-  const { fetchCoordinates, coordinates, loading, error } = useCoordinates();
+  const [localEvents, setLocalEvents] = useState<Event[]>(events);
+  const {
+    fetchCoordinates,
+    coordinates,
+    loading: searchLoading,
+    error: searchError,
+  } = useCoordinates();
+  const { triggerSeed, isSeeding } = useEventSeed();
+
+  useEffect(() => {
+    setLocalEvents(events);
+  }, [events]);
 
   useEffect(() => {
     setIsClient(true);
 
     import("leaflet").then((L) => {
-      const cssPrimary =
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--color-primary",
-        ) ||
-        getComputedStyle(document.documentElement).getPropertyValue(
-          "--primary",
-        ) ||
-        "#10B981";
+      // Pin de evento (Esmeralda)
+      const pinSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='36' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z' fill='#10B981' stroke='#064E3B'/><circle cx='12' cy='10' r='3' fill='white'/></svg>`;
 
-      const pinSvg = `
-        <svg xmlns='http://www.w3.org/2000/svg' width='36' height='48' viewBox='0 0 24 24' aria-hidden='true'>
-          <path d='M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z' fill='${cssPrimary.trim()}'/>
-          <circle cx='12' cy='9' r='2.5' fill='white'/>
-        </svg>
-      `;
+      // Pin de usuário (Azul/Pulsante)
+      const userSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='#3B82F6' opacity='0.2'/><circle cx='12' cy='12' r='5' fill='#3B82F6'/><circle cx='12' cy='12' r='2.5' fill='white'/></svg>`;
 
-      const svgUrl = `data:image/svg+xml;utf8,${encodeURIComponent(pinSvg)}`;
+      setMapIcon(
+        L.icon({
+          iconUrl: `data:image/svg+xml;utf8,${encodeURIComponent(pinSvg)}`,
+          iconSize: [36, 48],
+          iconAnchor: [18, 48],
+          popupAnchor: [0, -40],
+        }),
+      );
 
-      const DefaultIcon = L.icon({
-        iconUrl: svgUrl,
-        iconSize: [36, 48],
-        iconAnchor: [18, 48],
-        popupAnchor: [0, -40],
-        className: "leaflet-marker-icon-custom",
-      });
-
-      setMapIcon(DefaultIcon);
-
-      const userSvg = `
-        <svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' aria-hidden='true'>
-          <circle cx='12' cy='12' r='8' fill='#51ee9c' opacity='0.2'/>
-          <circle cx='12' cy='12' r='5' fill='#51ee9c'/>
-          <circle cx='12' cy='12' r='2.5' fill='white'/>
-        </svg>
-      `;
-
-      const userSvgUrl = `data:image/svg+xml;utf8,${encodeURIComponent(userSvg)}`;
-
-      const UserIcon = L.icon({
-        iconUrl: userSvgUrl,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20],
-        popupAnchor: [0, -25],
-        className: "leaflet-marker-icon-user",
-      });
-
-      setUserIcon(UserIcon);
+      setUserIcon(
+        L.icon({
+          iconUrl: `data:image/svg+xml;utf8,${encodeURIComponent(userSvg)}`,
+          iconSize: [40, 40],
+          iconAnchor: [20, 20],
+        }),
+      );
     });
 
     // Obter localização do utilizador
@@ -142,11 +139,15 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
     }
   }, []);
 
+  const referenceLocation = useMemo(
+    () => searchLocation || userLocation,
+    [searchLocation, userLocation],
+  );
+
   // Filtrar eventos num raio de 10km
   const nearbyEvents = useMemo(() => {
-    const referenceLocation = searchLocation || userLocation;
     if (!referenceLocation) return [];
-    return events.filter((event) => {
+    return localEvents.filter((event) => {
       if (!event.address.lat || !event.address.lng) return false;
       const dist = calculateDistance(
         referenceLocation[0],
@@ -156,7 +157,41 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
       );
       return dist <= 10;
     });
-  }, [events, userLocation, searchLocation]);
+  }, [localEvents, referenceLocation]);
+
+  const handleCheckAndSeed = useCallback(
+    async (lat: number, lng: number) => {
+      // Verifica se já existem eventos cadastrados (reais ou gerados anteriormente) no raio de 10km
+      const hasNearby = localEvents.some((e) => {
+        if (!e.address.lat || !e.address.lng) return false;
+        return calculateDistance(lat, lng, e.address.lat, e.address.lng) <= 10;
+      });
+
+      if (hasNearby || isSeeding) return;
+
+      // Dispara o hook de seed que faz o reverse geocoding e chama o backend
+      const newEvents = await triggerSeed(lat, lng);
+
+      if (newEvents && newEvents.length > 0) {
+        setLocalEvents((prev) => [...prev, ...newEvents]);
+        if (onEventsUpdated) onEventsUpdated(newEvents);
+      }
+    },
+    [localEvents, isSeeding, triggerSeed, onEventsUpdated],
+  );
+
+  useEffect(() => {
+    if (referenceLocation) {
+      handleCheckAndSeed(referenceLocation[0], referenceLocation[1]);
+    }
+  }, [referenceLocation, handleCheckAndSeed]);
+
+  // Atualiza a posição do mapa quando a busca retorna coordenadas
+  useEffect(() => {
+    if (coordinates && coordinates.length > 0) {
+      setSearchLocation([coordinates[0].lat, coordinates[0].lng]);
+    }
+  }, [coordinates]);
 
   // Recentrar mapa quando a localização de busca muda
   useEffect(() => {
@@ -165,91 +200,82 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
     }
   }, [searchLocation]);
 
-  // Atualizar localização de busca quando as coordenadas forem carregadas
-  useEffect(() => {
-    if (coordinates && coordinates.length > 0) {
-      const lat = coordinates[0].lat;
-      const lng = coordinates[0].lng;
-      setSearchLocation([lat, lng]);
-    }
-  }, [coordinates]);
+  const handleSearch = (e: FormEvent) => {
+    e.preventDefault();
+    if (searchQuery) fetchCoordinates(searchQuery);
+  };
+
+  const resetToMyLocation = () => {
+    setSearchLocation(null);
+    if (userLocation) mapInstance?.setView(userLocation, 13);
+  };
 
   if (!isClient || !userLocation || !mapIcon || !userIcon) {
     return (
-      <div className="flex h-[50vh] md:h-[70vh] lg:h-[80vh] w-full items-center justify-center rounded-lg border bg-muted">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2 text-sm text-muted-foreground">
-          A carregar mapa...
-        </span>
+      <div className="flex h-[60vh] w-full flex-col items-center justify-center rounded-2xl border bg-muted/20">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        <p className="mt-4 text-sm font-medium text-muted-foreground">
+          Iniciando sistemas de mapeamento...
+        </p>
       </div>
     );
   }
 
-  const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!searchQuery) return;
-
-    fetchCoordinates(searchQuery);
-  };
-
-  const handleMyLocation = () => {
-    if (mapInstance && userLocation) {
-      setSearchLocation(null);
-      mapInstance.setView(userLocation, 13);
-    }
-  };
-
   return (
-    <div>
-      <style>{`
-        .leaflet-control { z-index: 400 !important; }
-      `}</style>
+    <div className="relative">
+      <style>{`.leaflet-control { z-index: 10 !important; }`}</style>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Element 2: Map (left, spans 2 cols on md) */}
-        <div className="md:col-span-2">
-          <div className="relative h-[50vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-xl border shadow-inner">
+      {/* Overlay de carregamento da IA */}
+      {isSeeding && (
+        <div className="absolute inset-0 z-[1000] flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm rounded-2xl animate-in fade-in duration-300">
+          <div className="bg-slate-900 p-8 rounded-3xl border border-emerald-500/20 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm">
+            <Sparkles className="h-12 w-12 text-emerald-400 animate-pulse" />
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold text-white">
+                Gerando Experiências
+              </h3>
+              <p className="text-slate-400 text-xs">
+                Não encontramos eventos por aqui. Nossa IA está povoando a
+                região com eventos fictícios realistas...
+              </p>
+            </div>
+            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+              <div className="bg-emerald-500 h-full w-1/2 animate-[shimmer_2s_infinite] origin-left"></div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Painel do Mapa */}
+        <div className="md:col-span-2 space-y-4">
+          <div className="relative h-[55vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-2xl border border-slate-800 shadow-xl">
             <MapContainer
-              center={searchLocation || userLocation}
+              center={referenceLocation}
               zoom={13}
-              scrollWheelZoom={true}
               ref={mapRef as any}
               whenReady={() => {
                 if (mapRef.current) setMapInstance(mapRef.current);
               }}
               style={{ height: "100%", width: "100%" }}
             >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              />
+              <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
 
               <Circle
-                center={searchLocation || userLocation}
+                center={referenceLocation}
                 radius={10000}
                 pathOptions={{
                   color: "#10b981",
                   fillColor: "#10b981",
                   fillOpacity: 0.05,
                   weight: 1,
-                  dashArray: "8, 12",
+                  dashArray: "10, 15",
                 }}
               />
 
-              <Marker position={searchLocation || userLocation} icon={userIcon}>
+              <Marker position={referenceLocation} icon={userIcon}>
                 <Popup className="popup-dark">
-                  <div className="p-3 flex flex-col gap-2">
-                    <h3 className="font-bold text-slate-100 text-sm">
-                      {searchLocation ? "Localização de Busca" : "Sua Posição"}
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Latitude: {(searchLocation || userLocation)[0].toFixed(4)}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                      Longitude:{" "}
-                      {(searchLocation || userLocation)[1].toFixed(4)}
-                    </p>
-                  </div>
+                  <p className="text-xs font-bold p-1">Referência de Busca</p>
                 </Popup>
               </Marker>
 
@@ -267,90 +293,86 @@ export default function DiscoveryMap({ events }: DiscoveryMapProps) {
                 />
               ))}
             </MapContainer>
-
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 map-gradient-overlay"
-            />
           </div>
 
-          {nearbyEvents.length === 0 && (
-            <div className="flex items-center gap-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800 border border-yellow-200 mt-3">
-              <Info className="h-4 w-4" />
-              Nenhum evento encontrado num raio de 10km.
-            </div>
-          )}
+          <div
+            className={`flex items-center gap-3 p-4 rounded-xl border transition-colors ${nearbyEvents.length > 0 ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400" : "bg-slate-800 border-slate-700 text-slate-400"}`}
+          >
+            <Info className="h-5 w-5 shrink-0" />
+            <span className="text-sm font-medium">
+              {nearbyEvents.length > 0
+                ? `Encontramos ${nearbyEvents.length} eventos no raio de 10km.`
+                : "Nenhum evento encontrado. Tente buscar uma nova área."}
+            </span>
+          </div>
         </div>
 
-        {/* Right column: search form (3) and event panel (4) */}
-        <div className="md:col-span-1 flex flex-col gap-4">
-          {/* Element 3: simple location search form */}
+        {/* Painel Lateral */}
+        <div className="md:col-span-1 flex flex-col gap-6">
+          {/* Formulário de Localização */}
           <form
             onSubmit={handleSearch}
-            className="rounded-xl border p-4 bg-card shadow-sm"
+            className="rounded-2xl border p-5 bg-card shadow-lg space-y-4"
           >
-            <label className="text-lg font-medium mb-2 block">
-              Insira uma outra localização
-            </label>
-            <div className="flex gap-2">
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Endereço, cidade ou coordenadas"
-                className="flex-1 bg-background border border-input rounded-md px-3 py-2 text-sm placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary"
-                aria-label="Buscar localização"
-              />
-              <button
-                className="bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white font-semibold px-5 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                type="submit"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  "Buscar"
-                )}
-              </button>
-            </div>
-            <div className="mt-2 text-sm text-muted-foreground flex gap-2">
+            <h3 className="text-lg font-bold flex items-center gap-2">
+              <Navigation className="h-5 w-5 text-emerald-500" /> Explorar Área
+            </h3>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Cidade ou endereço..."
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                />
+                <button
+                  type="submit"
+                  disabled={searchLoading}
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl transition-all flex items-center justify-center"
+                >
+                  {searchLoading ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  ) : (
+                    "Buscar"
+                  )}
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={handleMyLocation}
-                className="text-primary underline"
+                onClick={resetToMyLocation}
+                className="w-full text-xs text-slate-500 hover:text-emerald-400 transition-colors flex items-center justify-center gap-1"
               >
-                Usar Minha localização
+                <MapPinIcon className="h-3 w-3" /> Usar minha posição atual
               </button>
             </div>
-            {error && (
-              <div className="mt-3 flex items-center gap-2 rounded-md bg-red-50 p-2 text-sm text-red-700 border border-red-200">
-                <Info className="h-4 w-4" />
-                {error}
-              </div>
+            {searchError && (
+              <p className="text-[10px] text-rose-500 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">
+                {searchError}
+              </p>
             )}
           </form>
 
-          {/* Element 4: event panel */}
-          <div className="rounded-xl border p-4 bg-card shadow-sm min-h-[200px]">
+          {/* Card de Detalhes Selecionado */}
+          <div className="flex-1 rounded-2xl border p-5 bg-card shadow-lg overflow-y-auto max-h-[400px]">
             {!selectedEvent ? (
-              <div className="flex flex-col items-start gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-full bg-primary/10">
-                    <Info className="h-4 w-4 text-primary" />
-                  </div>
-                  <h3 className="font-semibold">Detalhes do evento</h3>
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40 py-10">
+                <div className="p-4 rounded-full bg-slate-800">
+                  <MapPinIcon className="h-8 w-8 text-slate-500" />
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Selecione um evento no mapa para ver mais detalhes aqui.
+                <p className="text-xs font-medium text-slate-400">
+                  Clique em um marcador no mapa para ver detalhes.
                 </p>
               </div>
             ) : (
-              <EventCard
-                event={selectedEvent}
-                isExpanded={expandedEvent === selectedEvent.id}
-                onExpand={() => setExpandedEvent(selectedEvent.id)}
-                onCollapse={() => setExpandedEvent(null)}
-                isDimmed={false}
-              />
+              <div className="animate-in slide-in-from-bottom-2 duration-300">
+                <EventCard
+                  event={selectedEvent}
+                  isExpanded={expandedEvent === selectedEvent.id}
+                  onExpand={() => setExpandedEvent(selectedEvent.id)}
+                  onCollapse={() => setExpandedEvent(null)}
+                  isDimmed={false}
+                />
+              </div>
             )}
           </div>
         </div>
