@@ -132,4 +132,14 @@ Authorization: Bearer {{jwt_token}}
 GET http://localhost:3000/events/{{event_id}}/attendess
 Authorization: Bearer {{jwt_token}}
 
+###
+POST http://localhost:3000/seed/generateSeedEvents
+Content-Type: application/json
 
+{
+    "city": "Juiz de Fora",
+    "state": "Minas Gerais",
+    "country": "Brasil"
+}
+###
+GET http://localhost:3000/seed/listModels

@@ -8,6 +8,7 @@ import { GeocodingService } from 'src/geocoding/geocoding.service';
 @Module({
   imports: [CloudinaryModule],
   controllers: [EventsController],
+  exports: [EventsService],
   providers: [EventsService, CloudinaryStorageService, GeocodingService],
 })
 export class EventsModule {}
