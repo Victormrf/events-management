@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import {
@@ -9,7 +11,7 @@ import {
   useCallback,
 } from "react";
 import dynamic from "next/dynamic";
-import { Event } from "@/types/event";
+import { Event as AppEvent } from "@/types/event";
 import { Loader2, Info, Sparkles, Navigation, MapPinIcon } from "lucide-react";
 import { EventCard } from "./event-card";
 import "leaflet/dist/leaflet.css";
@@ -18,22 +20,22 @@ import { useCoordinates, useEventSeed } from "@/hooks/useGeocoding";
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false },
-);
+) as any;
 const TileLayer = dynamic(
   () => import("react-leaflet").then((mod) => mod.TileLayer),
   { ssr: false },
-);
+) as any;
 const Marker = dynamic(
   () => import("react-leaflet").then((mod) => mod.Marker),
   { ssr: false },
-);
+) as any;
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
-});
+}) as any;
 const Circle = dynamic(
   () => import("react-leaflet").then((mod) => mod.Circle),
   { ssr: false },
-);
+) as any;
 
 function calculateDistance(
   lat1: number,
@@ -55,8 +57,8 @@ function calculateDistance(
 }
 
 interface DiscoveryMapProps {
-  events: Event[];
-  onEventsUpdated?: (newEvents: Event[]) => void;
+  events: AppEvent[];
+  onEventsUpdated?: (newEvents: AppEvent[]) => void;
 }
 
 export default function DiscoveryMap({
@@ -69,7 +71,7 @@ export default function DiscoveryMap({
   const [isClient, setIsClient] = useState(false);
   const [mapIcon, setMapIcon] = useState<import("leaflet").Icon | null>(null);
   const [userIcon, setUserIcon] = useState<import("leaflet").Icon | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<AppEvent | null>(null);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
   const [mapInstance, setMapInstance] = useState<import("leaflet").Map | null>(
     null,
@@ -79,7 +81,7 @@ export default function DiscoveryMap({
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(
     null,
   );
-  const [localEvents, setLocalEvents] = useState<Event[]>(events);
+  const [localEvents, setLocalEvents] = useState<AppEvent[]>(events);
   const {
     fetchCoordinates,
     coordinates,
@@ -161,7 +163,6 @@ export default function DiscoveryMap({
 
   const handleCheckAndSeed = useCallback(
     async (lat: number, lng: number) => {
-      // Verifica se já existem eventos cadastrados (reais ou gerados anteriormente) no raio de 10km
       const hasNearby = localEvents.some((e) => {
         if (!e.address.lat || !e.address.lng) return false;
         return calculateDistance(lat, lng, e.address.lat, e.address.lng) <= 10;
@@ -169,12 +170,13 @@ export default function DiscoveryMap({
 
       if (hasNearby || isSeeding) return;
 
-      // Dispara o hook de seed que faz o reverse geocoding e chama o backend
       const newEvents = await triggerSeed(lat, lng);
 
       if (newEvents && newEvents.length > 0) {
-        setLocalEvents((prev) => [...prev, ...newEvents]);
-        if (onEventsUpdated) onEventsUpdated(newEvents);
+        const typedEvents = newEvents as unknown as AppEvent[];
+
+        setLocalEvents((prev) => [...prev, ...typedEvents]);
+        if (onEventsUpdated) onEventsUpdated(typedEvents);
       }
     },
     [localEvents, isSeeding, triggerSeed, onEventsUpdated],
