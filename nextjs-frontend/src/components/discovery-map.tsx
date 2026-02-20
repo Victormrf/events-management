@@ -12,26 +12,31 @@ import {
 } from "react";
 import dynamic from "next/dynamic";
 import { Event as AppEvent } from "@/types/event";
-import { Loader2, Info, Sparkles, Navigation, MapPinIcon } from "lucide-react";
+import { Loader2, Info, Sparkles, Navigation, MapPin } from "lucide-react";
 import { EventCard } from "./event-card";
 import "leaflet/dist/leaflet.css";
 import { useCoordinates, useEventSeed } from "@/hooks/useGeocoding";
 
+// Carregamento dinâmico com tipagem flexível para evitar erros de Overload
 const MapContainer = dynamic(
   () => import("react-leaflet").then((mod) => mod.MapContainer),
   { ssr: false },
 ) as any;
+
 const TileLayer = dynamic(
   () => import("react-leaflet").then((mod) => mod.TileLayer),
   { ssr: false },
 ) as any;
+
 const Marker = dynamic(
   () => import("react-leaflet").then((mod) => mod.Marker),
   { ssr: false },
 ) as any;
+
 const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
   ssr: false,
 }) as any;
+
 const Circle = dynamic(
   () => import("react-leaflet").then((mod) => mod.Circle),
   { ssr: false },
@@ -69,25 +74,27 @@ export default function DiscoveryMap({
     null,
   );
   const [isClient, setIsClient] = useState(false);
-  const [mapIcon, setMapIcon] = useState<import("leaflet").Icon | null>(null);
-  const [userIcon, setUserIcon] = useState<import("leaflet").Icon | null>(null);
+  const [mapIcon, setMapIcon] = useState<any>(null);
+  const [userIcon, setUserIcon] = useState<any>(null);
   const [selectedEvent, setSelectedEvent] = useState<AppEvent | null>(null);
   const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
-  const [mapInstance, setMapInstance] = useState<import("leaflet").Map | null>(
-    null,
-  );
-  const mapRef = useRef<import("leaflet").Map | null>(null);
+  const [mapInstance, setMapInstance] = useState<any>(null);
+  const mapRef = useRef<any>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchLocation, setSearchLocation] = useState<[number, number] | null>(
     null,
   );
   const [localEvents, setLocalEvents] = useState<AppEvent[]>(events);
+
+  const lastSeededCoords = useRef<string | null>(null);
+
   const {
     fetchCoordinates,
     coordinates,
     loading: searchLoading,
     error: searchError,
   } = useCoordinates();
+
   const { triggerSeed, isSeeding } = useEventSeed();
 
   useEffect(() => {
@@ -98,10 +105,7 @@ export default function DiscoveryMap({
     setIsClient(true);
 
     import("leaflet").then((L) => {
-      // Pin de evento (Esmeralda)
       const pinSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='36' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z' fill='#10B981' stroke='#064E3B'/><circle cx='12' cy='10' r='3' fill='white'/></svg>`;
-
-      // Pin de usuário (Azul/Pulsante)
       const userSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='#3B82F6' opacity='0.2'/><circle cx='12' cy='12' r='5' fill='#3B82F6'/><circle cx='12' cy='12' r='2.5' fill='white'/></svg>`;
 
       setMapIcon(
@@ -122,7 +126,6 @@ export default function DiscoveryMap({
       );
     });
 
-    // Obter localização do utilizador
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -132,10 +135,8 @@ export default function DiscoveryMap({
           ]);
         },
         () => {
-          console.warn(
-            "Localização negada pelo utilizador. Usando posição padrão.",
-          );
-          setUserLocation([-23.5505, -46.6333]); // Exemplo: São Paulo
+          console.warn("Localização negada. Usando posição padrão.");
+          setUserLocation([-21.7642, -43.3503]);
         },
       );
     }
@@ -146,7 +147,6 @@ export default function DiscoveryMap({
     [searchLocation, userLocation],
   );
 
-  // Filtrar eventos num raio de 10km
   const nearbyEvents = useMemo(() => {
     if (!referenceLocation) return [];
     return localEvents.filter((event) => {
@@ -163,18 +163,28 @@ export default function DiscoveryMap({
 
   const handleCheckAndSeed = useCallback(
     async (lat: number, lng: number) => {
-      const hasNearby = localEvents.some((e) => {
-        if (!e.address.lat || !e.address.lng) return false;
-        return calculateDistance(lat, lng, e.address.lat, e.address.lng) <= 10;
-      });
+      const coordKey = `${lat.toFixed(4)},${lng.toFixed(4)}`;
+      if (lastSeededCoords.current === coordKey) return;
 
-      if (hasNearby || isSeeding) return;
+      const hasNearby = localEvents.some(
+        (e) =>
+          e.address.lat &&
+          e.address.lng &&
+          calculateDistance(lat, lng, e.address.lat, e.address.lng) <= 10,
+      );
+
+      if (hasNearby || isSeeding) {
+        lastSeededCoords.current = coordKey; // Marca como processado mesmo se já tinha eventos
+        return;
+      }
+
+      console.log("[DiscoveryMap] Iniciando seed para:", coordKey);
+      lastSeededCoords.current = coordKey;
 
       const newEvents = await triggerSeed(lat, lng);
 
       if (newEvents && newEvents.length > 0) {
         const typedEvents = newEvents as unknown as AppEvent[];
-
         setLocalEvents((prev) => [...prev, ...typedEvents]);
         if (onEventsUpdated) onEventsUpdated(typedEvents);
       }
@@ -188,14 +198,12 @@ export default function DiscoveryMap({
     }
   }, [referenceLocation, handleCheckAndSeed]);
 
-  // Atualiza a posição do mapa quando a busca retorna coordenadas
   useEffect(() => {
     if (coordinates && coordinates.length > 0) {
       setSearchLocation([coordinates[0].lat, coordinates[0].lng]);
     }
   }, [coordinates]);
 
-  // Recentrar mapa quando a localização de busca muda
   useEffect(() => {
     if (searchLocation && mapRef.current) {
       mapRef.current.setView(searchLocation, 13);
@@ -212,9 +220,15 @@ export default function DiscoveryMap({
     if (userLocation) mapInstance?.setView(userLocation, 13);
   };
 
-  if (!isClient || !userLocation || !mapIcon || !userIcon) {
+  if (
+    !isClient ||
+    !userLocation ||
+    !mapIcon ||
+    !userIcon ||
+    !referenceLocation
+  ) {
     return (
-      <div className="flex h-[60vh] w-full flex-col items-center justify-center rounded-2xl border bg-muted/20">
+      <div className="flex h-[60vh] w-full flex-col items-center justify-center rounded-2xl border bg-slate-900/10">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="mt-4 text-sm font-medium text-muted-foreground">
           Iniciando sistemas de mapeamento...
@@ -230,7 +244,7 @@ export default function DiscoveryMap({
       {/* Overlay de carregamento da IA */}
       {isSeeding && (
         <div className="absolute inset-0 z-[1000] flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm rounded-2xl animate-in fade-in duration-300">
-          <div className="bg-slate-900 p-8 rounded-3xl border border-emerald-500/20 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm">
+          <div className="bg-slate-900 p-8 rounded-3xl border border-emerald-500/20 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm mx-4">
             <Sparkles className="h-12 w-12 text-emerald-400 animate-pulse" />
             <div className="space-y-1">
               <h3 className="text-xl font-bold text-white">
@@ -255,7 +269,7 @@ export default function DiscoveryMap({
             <MapContainer
               center={referenceLocation}
               zoom={13}
-              ref={mapRef as any}
+              ref={mapRef}
               whenReady={() => {
                 if (mapRef.current) setMapInstance(mapRef.current);
               }}
@@ -277,11 +291,13 @@ export default function DiscoveryMap({
 
               <Marker position={referenceLocation} icon={userIcon}>
                 <Popup className="popup-dark">
-                  <p className="text-xs font-bold p-1">Referência de Busca</p>
+                  <p className="text-xs font-bold p-1 text-white">
+                    Referência de Busca
+                  </p>
                 </Popup>
               </Marker>
 
-              {nearbyEvents.map((event) => (
+              {nearbyEvents.map((event: AppEvent) => (
                 <Marker
                   key={event.id}
                   position={[event.address.lat!, event.address.lng!]}
@@ -325,12 +341,12 @@ export default function DiscoveryMap({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cidade ou endereço..."
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-white"
                 />
                 <button
                   type="submit"
                   disabled={searchLoading}
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl transition-all flex items-center justify-center"
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl transition-all flex items-center justify-center min-w-[80px]"
                 >
                   {searchLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -344,7 +360,7 @@ export default function DiscoveryMap({
                 onClick={resetToMyLocation}
                 className="w-full text-xs text-slate-500 hover:text-emerald-400 transition-colors flex items-center justify-center gap-1"
               >
-                <MapPinIcon className="h-3 w-3" /> Usar minha posição atual
+                <MapPin className="h-3 w-3" /> Usar minha posição atual
               </button>
             </div>
             {searchError && (
@@ -354,19 +370,25 @@ export default function DiscoveryMap({
             )}
           </form>
 
-          {/* Card de Detalhes Selecionado */}
-          <div className="flex-1 rounded-2xl border p-5 bg-card shadow-lg overflow-y-auto max-h-[400px]">
+          {/* Card de Detalhes Selecionado*/}
+          <div className="flex-1 rounded-2xl border p-5 bg-card shadow-lg overflow-y-auto min-h-[300px] max-h-[600px] lg:max-h-[65vh]">
             {!selectedEvent ? (
-              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40 py-10">
-                <div className="p-4 rounded-full bg-slate-800">
-                  <MapPinIcon className="h-8 w-8 text-slate-500" />
+              <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40 py-12">
+                <div className="p-5 rounded-full bg-slate-800">
+                  <MapPin className="h-10 w-10 text-slate-500" />
                 </div>
-                <p className="text-xs font-medium text-slate-400">
-                  Clique em um marcador no mapa para ver detalhes.
-                </p>
+                <div className="space-y-1">
+                  <p className="font-bold text-slate-300">
+                    Nenhum evento selecionado
+                  </p>
+                  <p className="text-xs text-slate-500 max-w-[180px] mx-auto">
+                    Clique em um marcador no mapa para ver os detalhes completos
+                    aqui.
+                  </p>
+                </div>
               </div>
             ) : (
-              <div className="animate-in slide-in-from-bottom-2 duration-300">
+              <div className="animate-in fade-in slide-in-from-bottom-3 duration-500">
                 <EventCard
                   event={selectedEvent}
                   isExpanded={expandedEvent === selectedEvent.id}

@@ -7,6 +7,8 @@ export const getCoordinates = async (query: string): Promise<Coordinates[]> => {
       `${process.env.NEXT_PUBLIC_API_URL}/geocoding/search-by-query?query=${encodeURIComponent(query)}`,
     );
 
+    console.log("Resposta da API de Geocodificação:", response);
+
     if (!response.ok) {
       throw new Error(`Falha ao buscar coordenadas: ${response.statusText}`);
     }
