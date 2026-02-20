@@ -134,3 +134,6 @@ Content-Type: application/json
 }
 ###
 GET http://localhost:3000/seed/listModels
+
+###
+GET http://localhost:3000/geocoding/search-by-query?query=Rio%20de%20Janeiro

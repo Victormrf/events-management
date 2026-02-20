@@ -67,4 +67,42 @@ export class GeocodingService {
       return null;
     }
   }
+
+  async getReverseGeocoding(
+    lat: number,
+    lng: number,
+  ): Promise<{ city: string; state: string; country: string } | null> {
+    const url = `${this.baseUrl}/reverse?format=json&lat=${lat.toFixed(6)}&lon=${lng.toFixed(6)}&zoom=10&addressdetails=1`;
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'XploreHub-App-NestJS',
+        },
+      });
+
+      if (!response.ok) return null;
+
+      const data = await response.json();
+      const addr = data.address;
+
+      if (!addr) return null;
+
+      return {
+        // Nominatim pode retornar a cidade em campos diferentes dependendo da região
+        city:
+          addr.city ||
+          addr.town ||
+          addr.village ||
+          addr.municipality ||
+          addr.county ||
+          '',
+        state: addr.state || '',
+        country: addr.country || '',
+      };
+    } catch (error) {
+      console.error('Erro no Reverse Geocoding (Nominatim):', error.message);
+      return null;
+    }
+  }
 }

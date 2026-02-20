@@ -1,4 +1,10 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Query,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { GeocodingService } from './geocoding.service';
 import { AiSeedService } from 'src/seed/seed.service';
 import { EventsService } from 'src/events/events.service';
@@ -57,6 +63,30 @@ export class GeocodingController {
     }
 
     return coords;
+  }
+
+  @Get('reverse')
+  async reverseGeocoding(@Query('lat') lat: string, @Query('lng') lng: string) {
+    // Convertemos e validamos explicitamente
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+
+    if (isNaN(latitude) || isNaN(longitude)) {
+      throw new BadRequestException(
+        'Latitude e Longitude devem ser números válidos.',
+      );
+    }
+
+    const locationInfo = await this.geocodingService.getReverseGeocoding(
+      latitude,
+      longitude,
+    );
+
+    if (!locationInfo) {
+      throw new NotFoundException('Endereço não identificado.');
+    }
+
+    return locationInfo;
   }
 
   @Get('nearby')
