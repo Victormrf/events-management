@@ -137,3 +137,9 @@ GET http://localhost:3000/seed/listModels
 
 ###
 GET http://localhost:3000/geocoding/search-by-query?query=Rio%20de%20Janeiro
+
+###
+GET http://localhost:3000/geocoding/reverse?lat=-22.9110&lng=-43.2094
+
+###
+GET http://localhost:3000/geocoding/nearby?city=Rio%20de%20Janeiro&state=Rio%20de%20Janeiro&country=Brasil

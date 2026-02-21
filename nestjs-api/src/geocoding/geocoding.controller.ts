@@ -4,6 +4,7 @@ import {
   Query,
   BadRequestException,
   NotFoundException,
+  Logger,
 } from '@nestjs/common';
 import { GeocodingService } from './geocoding.service';
 import { AiSeedService } from 'src/seed/seed.service';
@@ -11,6 +12,8 @@ import { EventsService } from 'src/events/events.service';
 
 @Controller('geocoding')
 export class GeocodingController {
+  private readonly logger = new Logger(GeocodingController.name);
+
   constructor(
     private readonly geocodingService: GeocodingService,
     private readonly aiSeedService: AiSeedService,
@@ -67,7 +70,10 @@ export class GeocodingController {
 
   @Get('reverse')
   async reverseGeocoding(@Query('lat') lat: string, @Query('lng') lng: string) {
-    // Convertemos e validamos explicitamente
+    this.logger.log(
+      `Recebida requisição reverse para lat: ${lat}, lng: ${lng}`,
+    );
+
     const latitude = parseFloat(lat);
     const longitude = parseFloat(lng);
 
@@ -83,7 +89,12 @@ export class GeocodingController {
     );
 
     if (!locationInfo) {
-      throw new NotFoundException('Endereço não identificado.');
+      this.logger.error(
+        `Falha no service para coordenadas: ${latitude}, ${longitude}`,
+      );
+      throw new NotFoundException(
+        'Endereço não identificado para estas coordenadas.',
+      );
     }
 
     return locationInfo;
@@ -95,12 +106,44 @@ export class GeocodingController {
     @Query('state') state: string,
     @Query('country') country: string,
   ) {
-    const events = await this.eventsService.findAllByCity(city);
+    if (!city) throw new BadRequestException('Cidade é obrigatória.');
 
-    if (events.length === 0) {
-      return this.aiSeedService.seedEventsForLocation(city, state, country);
+    this.logger.log(`[NEARBY] Verificando eventos existentes em ${city}...`);
+
+    let cityEvents = [];
+
+    try {
+      cityEvents = await this.eventsService.findAllByCity(city);
+    } catch (error) {
+      this.logger.warn(
+        `[NEARBY] Nenhum evento real encontrado em ${city} (Service retornou: ${error.message}).`,
+      );
+      cityEvents = [];
     }
 
-    return events;
+    try {
+      if (cityEvents && cityEvents.length > 0) {
+        this.logger.log(
+          `[NEARBY] Encontrados ${cityEvents.length} eventos existentes.`,
+        );
+        return cityEvents;
+      }
+
+      this.logger.log(
+        `[NEARBY] Sem eventos cadastrados em ${city}. Iniciando geração por IA...`,
+      );
+      return await this.aiSeedService.seedEventsForLocation(
+        city,
+        state,
+        country,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Erro crítico ao processar busca nearby: ${error.message}`,
+      );
+      throw new BadRequestException(
+        'Erro interno ao buscar ou gerar eventos para esta região.',
+      );
+    }
   }
 }

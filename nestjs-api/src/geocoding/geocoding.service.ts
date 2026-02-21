@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class GeocodingService {
-  private readonly baseUrl = 'https://nominatim.openstreetmap.org/search';
+  private readonly logger = new Logger(GeocodingService.name);
+  private readonly baseUrl = 'https://nominatim.openstreetmap.org';
 
   async getCoordinates(address: {
     street: string;
@@ -11,7 +12,7 @@ export class GeocodingService {
     country: string;
   }): Promise<{ lat: number; lng: number } | null> {
     const query = `${address.street}, ${address.city}, ${address.state}, ${address.country}`;
-    const url = `${this.baseUrl}?format=json&q=${encodeURIComponent(query)}&limit=1`;
+    const url = `${this.baseUrl}/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
 
     try {
       const response = await fetch(url, {
@@ -41,7 +42,7 @@ export class GeocodingService {
   async getCoordinatesByQuery(
     query: string,
   ): Promise<{ lat: number; lng: number } | null> {
-    const url = `${this.baseUrl}?format=json&q=${encodeURIComponent(query)}&limit=1`;
+    const url = `${this.baseUrl}/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
 
     try {
       const response = await fetch(url, {
@@ -72,24 +73,53 @@ export class GeocodingService {
     lat: number,
     lng: number,
   ): Promise<{ city: string; state: string; country: string } | null> {
-    const url = `${this.baseUrl}/reverse?format=json&lat=${lat.toFixed(6)}&lon=${lng.toFixed(6)}&zoom=10&addressdetails=1`;
+    // Forçamos o uso de ponto como separador e 6 casas decimais
+    const safeLat = lat.toFixed(6);
+    const safeLng = lng.toFixed(6);
+    const url = `${this.baseUrl}/reverse?format=json&lat=${safeLat}&lon=${safeLng}&zoom=10&addressdetails=1`;
+
+    this.logger.debug(`Consultando Nominatim em: ${url}`);
 
     try {
+      // Verificamos se o fetch existe (para Node < 18)
+      if (typeof fetch === 'undefined') {
+        throw new Error(
+          'Global fetch não está disponível. Por favor, use Node 18+ ou instale o node-fetch.',
+        );
+      }
+
       const response = await fetch(url, {
         headers: {
-          'User-Agent': 'XploreHub-App-NestJS',
+          'User-Agent': 'XploreHub-App-NestJS-v2', // Alterado para garantir exclusividade
+          Accept: 'application/json',
         },
       });
 
-      if (!response.ok) return null;
+      if (!response.ok) {
+        const errorText = await response.text();
+        this.logger.error(
+          `Nominatim retornou status ${response.status}: ${errorText}`,
+        );
+        return null;
+      }
 
       const data = await response.json();
+
+      if (data.error) {
+        this.logger.warn(`Nominatim retornou um erro lógico: ${data.error}`);
+        return null;
+      }
+
       const addr = data.address;
 
-      if (!addr) return null;
+      if (!addr) {
+        this.logger.warn(
+          `Nominatim não retornou o objeto 'address' para ${url}`,
+        );
+        return null;
+      }
 
       return {
-        // Nominatim pode retornar a cidade em campos diferentes dependendo da região
         city:
           addr.city ||
           addr.town ||
@@ -101,7 +131,9 @@ export class GeocodingService {
         country: addr.country || '',
       };
     } catch (error) {
-      console.error('Erro no Reverse Geocoding (Nominatim):', error.message);
+      this.logger.error(
+        `Exceção capturada no Geocoding Service: ${error.message}`,
+      );
       return null;
     }
   }
