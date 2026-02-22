@@ -105,8 +105,8 @@ export default function DiscoveryMap({
     setIsClient(true);
 
     import("leaflet").then((L) => {
-      const pinSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='36' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z' fill='#10B981' stroke='#064E3B'/><circle cx='12' cy='10' r='3' fill='white'/></svg>`;
-      const userSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='#3B82F6' opacity='0.2'/><circle cx='12' cy='12' r='5' fill='#3B82F6'/><circle cx='12' cy='12' r='2.5' fill='white'/></svg>`;
+      const pinSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='36' height='48' viewBox='0 0 24 24' fill='none' stroke='#064E3B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z' fill='#5dd9c1' stroke='#064E3B'/><circle cx='12' cy='10' r='3' fill='white'/></svg>`;
+      const userSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='#ff206e' opacity='0.2'/><circle cx='12' cy='12' r='5' fill='#ff206e'/><circle cx='12' cy='12' r='2.5' fill='white'/></svg>`;
 
       setMapIcon(
         L.icon({
@@ -150,7 +150,7 @@ export default function DiscoveryMap({
   const nearbyEvents = useMemo(() => {
     if (!referenceLocation) return [];
     return localEvents.filter((event) => {
-      if (!event.address.lat || !event.address.lng) return false;
+      if (!event?.address?.lat || !event?.address?.lng) return false;
       const dist = calculateDistance(
         referenceLocation[0],
         referenceLocation[1],
@@ -245,7 +245,7 @@ export default function DiscoveryMap({
       {isSeeding && (
         <div className="absolute inset-0 z-[1000] flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm rounded-2xl animate-in fade-in duration-300">
           <div className="bg-slate-900 p-8 rounded-3xl border border-emerald-500/20 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm mx-4">
-            <Sparkles className="h-12 w-12 text-emerald-400 animate-pulse" />
+            <Sparkles className="h-12 w-12 text-foreground animate-pulse" />
             <div className="space-y-1">
               <h3 className="text-xl font-bold text-white">
                 Gerando Experiências
@@ -256,7 +256,7 @@ export default function DiscoveryMap({
               </p>
             </div>
             <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-emerald-500 h-full w-1/2 animate-[shimmer_2s_infinite] origin-left"></div>
+              <div className="bg-foreground h-full w-1/2 animate-[shimmer_2s_infinite] origin-left"></div>
             </div>
           </div>
         </div>
@@ -281,8 +281,8 @@ export default function DiscoveryMap({
                 center={referenceLocation}
                 radius={10000}
                 pathOptions={{
-                  color: "#10b981",
-                  fillColor: "#10b981",
+                  color: "#5dd9c1",
+                  fillColor: "#5dd9c1",
                   fillOpacity: 0.05,
                   weight: 1,
                   dashArray: "10, 15",
@@ -314,10 +314,10 @@ export default function DiscoveryMap({
           </div>
 
           <div
-            className={`flex items-center gap-3 p-4 rounded-xl border transition-colors ${nearbyEvents.length > 0 ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400" : "bg-slate-800 border-slate-700 text-slate-400"}`}
+            className={`flex items-center gap-3 p-4 rounded-xl border transition-colors ${nearbyEvents.length > 0 ? "bg-emerald-500/5 border-emerald-500/20 text-foreground" : "bg-slate-800 border-slate-700 text-slate-400"}`}
           >
             <Info className="h-5 w-5 shrink-0" />
-            <span className="text-sm font-medium">
+            <span className="text-sm text-foreground font-medium">
               {nearbyEvents.length > 0
                 ? `Encontramos ${nearbyEvents.length} eventos no raio de 10km.`
                 : "Nenhum evento encontrado. Tente buscar uma nova área."}
@@ -332,8 +332,9 @@ export default function DiscoveryMap({
             onSubmit={handleSearch}
             className="rounded-2xl border p-5 bg-card shadow-lg space-y-4"
           >
-            <h3 className="text-lg font-bold flex items-center gap-2">
-              <Navigation className="h-5 w-5 text-emerald-500" /> Explorar Área
+            <h3 className="text-lg text-foreground font-bold flex items-center gap-2">
+              <Navigation className="h-5 w-5 text-foreground" /> Explore outras
+              localizações
             </h3>
             <div className="space-y-2">
               <div className="flex gap-2">
@@ -341,12 +342,12 @@ export default function DiscoveryMap({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cidade ou endereço..."
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all text-white"
+                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-foreground outline-none transition-all text-white"
                 />
                 <button
                   type="submit"
                   disabled={searchLoading}
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl transition-all flex items-center justify-center min-w-[80px]"
+                  className="bg-primary/80 hover:bg-primary disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl transition-all flex items-center justify-center min-w-[80px]"
                 >
                   {searchLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -358,7 +359,7 @@ export default function DiscoveryMap({
               <button
                 type="button"
                 onClick={resetToMyLocation}
-                className="w-full text-xs text-slate-500 hover:text-emerald-400 transition-colors flex items-center justify-center gap-1"
+                className="w-full text-md text-slate-500 hover:text-primary transition-colors flex items-center justify-center gap-1"
               >
                 <MapPin className="h-3 w-3" /> Usar minha posição atual
               </button>
