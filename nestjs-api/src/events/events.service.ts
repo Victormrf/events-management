@@ -72,6 +72,10 @@ export class EventsService {
           },
         },
       },
+      include: {
+        address: true,
+        creator: { select: { name: true, email: true } },
+      },
     });
   }
 
