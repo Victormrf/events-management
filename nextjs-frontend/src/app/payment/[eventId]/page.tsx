@@ -30,7 +30,7 @@ export default function PaymentPage() {
 
   const CARD_PATTERNS = {
     visa: "^4[0-9]{12}(?:[0-9]{3})?$",
-    mastercard: "^(5[1-5][0-9]{14})$",
+    mastercard: "^5[1-5][0-9]{2}\\s?[0-9]{4}\\s?[0-9]{4}\\s?[0-9]{4}$",
   };
 
   useEffect(() => {
@@ -83,9 +83,9 @@ export default function PaymentPage() {
   }
 
   return (
-    <section className="bg-white py-8 antialiased dark:bg-gray-900 md:py-16 flex min-h-[40vh] items-center justify-center">
+    <section className="bg-background-900 py-8 antialiased md:py-16 flex min-h-[40vh] items-center justify-center">
       <div className="mx-auto max-w-5xl px-4">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl">
+        <h2 className="text-xl font-semibold text-primary-900 sm:text-2xl">
           Payment
         </h2>
 
@@ -93,7 +93,7 @@ export default function PaymentPage() {
           {/* --- Formulário de Pagamento --- */}
           <form
             onSubmit={handleSubmit}
-            className="w-full rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-800 sm:p-6 lg:max-w-xl lg:p-8"
+            className="w-full rounded-lg border p-4 shadow-sm border-gray-700 bg-card sm:p-6 lg:max-w-xl lg:p-8"
           >
             <div className="mb-6 grid grid-cols-2 gap-4">
               <div className="col-span-2">
@@ -103,7 +103,7 @@ export default function PaymentPage() {
                 <input
                   type="text"
                   id="full_name"
-                  className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                  className="mt-2 block w-full rounded-lg border p-2.5 text-sm focus:border-primary-500 focus:ring-primary-500 border-slate-700 bg-slate-900 text-white placeholder:text-gray-400 focus:border-primary-500 focus:ring-primary-500"
                   placeholder="Bonnie Green"
                   required
                 />
@@ -133,7 +133,7 @@ export default function PaymentPage() {
                 <input
                   type="text"
                   id="card-number-input"
-                  className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 pe-10 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                  className="mt-2 block w-full rounded-lg border border-primary-700 bg-slate-900 p-2.5 pe-10 text-sm text-white focus:border-primary focus:ring-primary placeholder:text-gray-400"
                   placeholder="xxxx-xxxx-xxxx-xxxx"
                   pattern={CARD_PATTERNS[cardBrand]}
                   title={`Please enter a valid ${cardBrand} card number.`}
@@ -146,7 +146,7 @@ export default function PaymentPage() {
                 <input
                   id="card-expiration-input"
                   type="text"
-                  className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                  className="mt-2 block w-full rounded-lg border border-primary-700 bg-slate-900 p-2.5 text-sm text-white focus:border-primary-500 focus:ring-primary-500 placeholder:text-gray-400"
                   placeholder="MM/YY"
                   required
                 />
@@ -157,7 +157,7 @@ export default function PaymentPage() {
                 <input
                   type="number"
                   id="cvv-input"
-                  className="mt-2 block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-primary-500 focus:ring-primary-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                  className="mt-2 block w-full rounded-lg border border-primary-700 bg-slate-900 p-2.5 text-sm text-white focus:border-primary-500 focus:ring-primary-500 placeholder:text-gray-400"
                   placeholder="•••"
                   required
                 />
@@ -175,35 +175,35 @@ export default function PaymentPage() {
           {/* --- Resumo do Pedido (Sidebar) --- */}
           {orderSummary.totalPrice && (
             <div className="mt-6 grow sm:mt-8 lg:mt-0">
-              <div className="space-y-4 rounded-lg border border-gray-100 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800">
+              <div className="space-y-4 rounded-lg border p-6 border-gray-700 bg-card">
                 <div className="space-y-2">
                   <dl className="flex items-center justify-between gap-4">
-                    <dt className="text-base font-normal text-gray-500 dark:text-gray-400 whitespace-nowrap">
+                    <dt className="text-base font-normal text-foreground whitespace-nowrap">
                       Individual price
                     </dt>
-                    <dd className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                    <dd className="text-sm font-medium text-white whitespace-nowrap">
                       {`R$ ${orderSummary.individualPrice?.toLocaleString(
                         "pt-BR",
                         {
                           minimumFractionDigits: 2,
-                        }
+                        },
                       )}`}
                     </dd>
                   </dl>
                   <dl className="flex items-center justify-between gap-4">
-                    <dt className="text-base font-normal text-gray-500 dark:text-gray-400">
+                    <dt className="text-base font-normal text-foreground whitespace-nowrap">
                       Quantity
                     </dt>
-                    <dd className="text-base font-medium text-gray-900 dark:text-white">
+                    <dd className="text-base font-medium text-white">
                       {orderSummary.quantity}
                     </dd>
                   </dl>
                 </div>
                 <dl className="flex items-center justify-between gap-4 border-t border-gray-200 pt-2 dark:border-gray-700">
-                  <dt className="text-base font-bold text-gray-900 dark:text-white">
+                  <dt className="text-base font-bold text-foreground whitespace-nowrap">
                     Total price
                   </dt>
-                  <dd className="text-base font-bold text-gray-900 dark:text-white">
+                  <dd className="text-base font-bold text-white">
                     {`R$ ${orderSummary.totalPrice.toLocaleString("pt-BR", {
                       minimumFractionDigits: 2,
                     })}`}
