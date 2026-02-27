@@ -2,7 +2,7 @@ import { CreateOrderPayload } from "@/types/order";
 
 export const generateOrder = async (
   token: string,
-  payload: CreateOrderPayload
+  payload: CreateOrderPayload,
 ) => {
   try {
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
@@ -16,7 +16,7 @@ export const generateOrder = async (
 
     if (!response.ok) {
       throw new Error(
-        `Falha ao se inscrever em evento: ${response.statusText}`
+        `Falha ao se inscrever em evento: ${response.statusText}`,
       );
     }
 
@@ -36,11 +36,11 @@ export const fetchOrder = async (token: string, eventId: string) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
     if (!response.ok) {
       throw new Error(
-        `Falha ao buscar inscrição do usuário: ${response.statusText}`
+        `Falha ao buscar inscrição do usuário: ${response.statusText}`,
       );
     }
 
@@ -60,11 +60,17 @@ export const fetchUserOrders = async (token: string) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
+
+    // Trata 404 como "sem inscrições" em vez de erro
+    if (response.status === 404) {
+      return [];
+    }
+
     if (!response.ok) {
       throw new Error(
-        `Falha ao buscar inscrições do usuário: ${response.statusText}`
+        `Falha ao buscar inscrições do usuário: ${response.statusText}`,
       );
     }
 
@@ -78,7 +84,7 @@ export const fetchUserOrders = async (token: string) => {
 export const changeOrderStatus = async (
   token: string,
   eventId: string,
-  status: "PENDING" | "CONFIRMED" | "CANCELED"
+  status: "PENDING" | "CONFIRMED" | "CANCELED",
 ) => {
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/orders/event/${eventId}/change-status`,
@@ -89,7 +95,7 @@ export const changeOrderStatus = async (
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ status: status }),
-    }
+    },
   );
 
   if (!response.ok) {

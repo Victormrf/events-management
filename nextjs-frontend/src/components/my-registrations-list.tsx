@@ -15,6 +15,7 @@ import {
 import { format } from "date-fns";
 import { Address } from "@/types/address";
 import { useMyOrders } from "@/hooks/useOrder";
+import Link from "next/link";
 
 export function MyRegistrationsList() {
   const { orders, loading, error } = useMyOrders();
@@ -89,7 +90,9 @@ export function MyRegistrationsList() {
         <p className="text-muted-foreground mb-4">
           Você ainda não se inscreveu em nenhum evento.
         </p>
-        <Button>Explore eventos próximos a você</Button>
+        <Link href="/discovery">
+          <Button>Explore eventos próximos a você</Button>
+        </Link>
       </div>
     );
   }
@@ -199,7 +202,7 @@ export function MyRegistrationsList() {
                         <p className="text-muted-foreground">
                           {format(
                             new Date(registration.createdAt),
-                            "dd/MM/yyyy"
+                            "dd/MM/yyyy",
                           )}
                         </p>
                       </div>

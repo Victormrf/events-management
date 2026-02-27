@@ -39,7 +39,7 @@ export function useGenerateOrder() {
         setLoading(false);
       }
     },
-    [getToken]
+    [getToken],
   );
   return { handleCreateOrder, loading, error, success };
 }
@@ -69,7 +69,7 @@ export function useGetOrder(eventId: string) {
       } catch (err) {
         // Assume que o erro é um objeto com a propriedade 'message'
         setError(
-          "Não foi possível carregar essa inscrição. Por favor, tente novamente."
+          "Não foi possível carregar essa inscrição. Por favor, tente novamente.",
         );
         console.error("Erro no hook useMyOrder:", err);
       } finally {
@@ -106,9 +106,8 @@ export function useMyOrders() {
         const data: Order[] = await fetchUserOrders(token);
         setOrders(data);
       } catch (err) {
-        // Assume que o erro é um objeto com a propriedade 'message'
         setError(
-          "Não foi possível carregar suas inscrições. Por favor, tente novamente."
+          "Não foi possível carregar suas inscrições. Por favor, tente novamente.",
         );
         console.error("Erro no hook useMyOrders:", err);
       } finally {
@@ -130,7 +129,7 @@ export function useChangeOrderStatus() {
 
   const mutate = async (
     eventId: string,
-    status: "PENDING" | "CONFIRMED" | "CANCELED"
+    status: "PENDING" | "CONFIRMED" | "CANCELED",
   ) => {
     setLoading(true);
     setError(null);
