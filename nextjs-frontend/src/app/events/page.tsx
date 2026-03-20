@@ -8,7 +8,7 @@ export default function FeaturedEventsPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Upcoming Events</h1>
           <p className="text-muted-foreground">
-            Discover amazing events happening near you
+            Check out the hottest events happening around the world.
           </p>
         </div>
 
