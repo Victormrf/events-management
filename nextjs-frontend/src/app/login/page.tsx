@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { LoginForm } from "@/components/login-form";
 
 export default function LoginPage() {
@@ -11,7 +12,9 @@ export default function LoginPage() {
               Sign in to your account or create a new one
             </p>
           </div>
-          <LoginForm />
+          <Suspense>
+            <LoginForm />
+          </Suspense>
         </div>
       </div>
     </div>
