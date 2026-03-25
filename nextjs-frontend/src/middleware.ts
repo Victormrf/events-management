@@ -17,6 +17,7 @@ export function middleware(request: NextRequest) {
   if (!isUserAuthenticated && isProtectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    url.searchParams.set("callbackUrl", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 

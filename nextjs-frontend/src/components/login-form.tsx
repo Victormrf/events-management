@@ -15,10 +15,12 @@ import {
 } from "@/components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
 import { useLogin, useRegister } from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -95,7 +97,7 @@ export function LoginForm() {
         });
         if (response) {
           console.log("Registro bem-sucedido:", response);
-          router.push("/");
+          router.push(callbackUrl);
         }
       } else {
         // Chama a função mutate do hook de login
@@ -105,7 +107,7 @@ export function LoginForm() {
         });
         if (response) {
           console.log("login bem-sucedido:", response);
-          router.push("/");
+          router.push(callbackUrl);
         }
       }
     }
