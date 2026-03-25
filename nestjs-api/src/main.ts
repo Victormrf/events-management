@@ -14,7 +14,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: "https://xplore-hub.vercel.app",
+    origin: ["https://xplore-hub.vercel.app", "http://localhost:3001"],
     credentials: true,
   });
 
