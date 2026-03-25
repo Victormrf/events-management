@@ -8,7 +8,7 @@ const isAuthenticated = (request: NextRequest): boolean => {
 
 const protectedRoutes = ["/profile", "/my-events", "/create-event"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const isUserAuthenticated = isAuthenticated(request);
   const isProtectedRoute = protectedRoutes.some((route) =>
     request.nextUrl.pathname.startsWith(route)
