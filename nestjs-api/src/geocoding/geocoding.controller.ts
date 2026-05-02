@@ -6,10 +6,12 @@ import {
   NotFoundException,
   Logger,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { GeocodingService } from './geocoding.service';
 import { AiSeedService } from 'src/seed/seed.service';
 import { EventsService } from 'src/events/events.service';
 
+@ApiTags('Geocoding')
 @Controller('geocoding')
 export class GeocodingController {
   private readonly logger = new Logger(GeocodingController.name);
@@ -20,6 +22,13 @@ export class GeocodingController {
     private readonly eventsService: EventsService,
   ) {}
 
+  @ApiOperation({ summary: 'Search coordinates by address components' })
+  @ApiQuery({ name: 'street', required: true, description: 'Street name' })
+  @ApiQuery({ name: 'city', required: true, description: 'City name' })
+  @ApiQuery({ name: 'state', required: true, description: 'State name' })
+  @ApiQuery({ name: 'country', required: true, description: 'Country name' })
+  @ApiResponse({ status: 200, description: 'Coordinates retrieved successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
   @Get('search')
   async searchCoordinates(
     @Query('street') street: string,
@@ -49,6 +58,10 @@ export class GeocodingController {
     return coords;
   }
 
+  @ApiOperation({ summary: 'Search coordinates by a generic query string' })
+  @ApiQuery({ name: 'query', required: true, description: 'The address query string' })
+  @ApiResponse({ status: 200, description: 'Coordinates retrieved successfully.' })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
   @Get('search-by-query')
   async searchCoordinatesByQuery(@Query('query') query: string) {
     if (!query) {
@@ -68,6 +81,11 @@ export class GeocodingController {
     return coords;
   }
 
+  @ApiOperation({ summary: 'Reverse geocode coordinates to an address' })
+  @ApiQuery({ name: 'lat', required: true, description: 'Latitude' })
+  @ApiQuery({ name: 'lng', required: true, description: 'Longitude' })
+  @ApiResponse({ status: 200, description: 'Address retrieved successfully.' })
+  @ApiResponse({ status: 404, description: 'Address not found.' })
   @Get('reverse')
   async reverseGeocoding(@Query('lat') lat: string, @Query('lng') lng: string) {
     this.logger.log(
@@ -100,6 +118,11 @@ export class GeocodingController {
     return locationInfo;
   }
 
+  @ApiOperation({ summary: 'Get nearby events for a location, automatically seeding if necessary' })
+  @ApiQuery({ name: 'city', required: true, description: 'City name' })
+  @ApiQuery({ name: 'state', required: false, description: 'State name' })
+  @ApiQuery({ name: 'country', required: false, description: 'Country name' })
+  @ApiResponse({ status: 200, description: 'Nearby events retrieved successfully.' })
   @Get('nearby')
   async getNearbyEvents(
     @Query('city') city: string,
