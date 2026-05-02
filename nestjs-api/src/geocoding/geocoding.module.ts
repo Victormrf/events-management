@@ -6,11 +6,12 @@ import { SeedModule } from 'src/seed/seed.module';
 import { AiSeedService } from 'src/seed/seed.service';
 import { EventsService } from 'src/events/events.service';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { TicketmasterModule } from 'src/ticketmaster/ticketmaster.module';
 
 @Module({
   controllers: [GeocodingController],
   providers: [GeocodingService, AiSeedService, EventsService],
   exports: [GeocodingService],
-  imports: [EventsModule, SeedModule, CloudinaryModule],
+  imports: [EventsModule, SeedModule, CloudinaryModule, TicketmasterModule],
 })
 export class GeocodingModule {}

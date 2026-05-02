@@ -10,6 +10,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { GeocodingService } from './geocoding.service';
 import { AiSeedService } from 'src/seed/seed.service';
 import { EventsService } from 'src/events/events.service';
+import { TicketmasterService } from 'src/ticketmaster/ticketmaster.service';
 
 @ApiTags('Geocoding')
 @Controller('geocoding')
@@ -20,6 +21,7 @@ export class GeocodingController {
     private readonly geocodingService: GeocodingService,
     private readonly aiSeedService: AiSeedService,
     private readonly eventsService: EventsService,
+    private readonly ticketmasterService: TicketmasterService,
   ) {}
 
   @ApiOperation({ summary: 'Search coordinates by address components' })
@@ -153,7 +155,18 @@ export class GeocodingController {
       }
 
       this.logger.log(
-        `[NEARBY] Sem eventos cadastrados em ${city}. Iniciando geração por IA...`,
+        `[NEARBY] Sem eventos cadastrados em ${city}. Buscando no Ticketmaster...`,
+      );
+      
+      const tmEvents = await this.ticketmasterService.getEventsFromTicketmaster(city, state, country);
+      
+      if (tmEvents && tmEvents.length > 0) {
+        this.logger.log(`[NEARBY] Encontrados e salvos ${tmEvents.length} eventos do Ticketmaster.`);
+        return tmEvents;
+      }
+
+      this.logger.log(
+        `[NEARBY] Nenhum evento do Ticketmaster encontrado. Iniciando geração por IA...`,
       );
       return await this.aiSeedService.seedEventsForLocation(
         city,

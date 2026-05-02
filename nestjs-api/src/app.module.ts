@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { OrdersModule } from './orders/orders.module';
 import { GeocodingModule } from './geocoding/geocoding.module';
 import { SeedModule } from './seed/seed.module';
+import { TicketmasterModule } from './ticketmaster/ticketmaster.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { SeedModule } from './seed/seed.module';
     OrdersModule,
     GeocodingModule,
     SeedModule,
+    TicketmasterModule,
   ],
   controllers: [AppController],
   providers: [AppService],
