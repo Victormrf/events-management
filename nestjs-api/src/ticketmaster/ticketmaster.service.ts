@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { EventsService } from 'src/events/events.service';
+import { TicketmasterEventDto } from './dto/create-ticketmaster-event';
 
 @Injectable()
 export class TicketmasterService {
@@ -9,7 +10,8 @@ export class TicketmasterService {
 
   constructor(private eventsService: EventsService) {}
 
-  async getEventsFromTicketmaster(city: string, state: string, country: string) {
+  async getEventsFromTicketmaster(city: string  , state: string, country: string) {
+    
     if (!this.apiKey) {
       this.logger.warn('Ticketmaster API Key não configurada.');
       return [];
@@ -18,15 +20,23 @@ export class TicketmasterService {
     const countryCode = country.toLowerCase() === 'brasil' ? 'BR' : 'US';
     const url = `${this.baseUrl}/events.json?city=${encodeURIComponent(city)}&countryCode=${countryCode}&apikey=${this.apiKey}&size=5`;
 
+    this.logger.log(`Buscando eventos no Ticketmaster para: ${city}, ${state}, ${country}`);
+    this.logger.log(`URL da requisição: ${url.replace(this.apiKey, '***')}`); // Mascarando API KEY por segurança
+
     try {
       const response = await fetch(url);
+      this.logger.log(`Status da resposta do Ticketmaster: ${response.status}`);
+      
       const data = await response.json();
 
       if (!data._embedded || !data._embedded.events) {
+        this.logger.warn(`Nenhum evento encontrado no Ticketmaster. Resposta da API: ${JSON.stringify(data).substring(0, 500)}`);
         return [];
       }
 
       const rawEvents = data._embedded.events;
+      this.logger.log(`Encontrados ${rawEvents.length} eventos no Ticketmaster.`);
+      
       const processedEvents = [];
 
       for (const tmEvent of rawEvents) {
