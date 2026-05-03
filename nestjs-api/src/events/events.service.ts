@@ -23,6 +23,7 @@ export class EventsService {
     data: CreateEventDto,
     creatorId: string,
     imageUrl: string | null,
+    externalId?: string,
   ) {
     let addressObject: CreateAddressDto;
 
@@ -61,6 +62,7 @@ export class EventsService {
         maxAttendees: data.maxAttendees,
         price: data.price !== undefined ? data.price.toFixed(2) : '0.00',
         image: imageUrl,
+        externalId: externalId,
         creator: {
           connect: { id: creatorId },
         },
@@ -114,6 +116,13 @@ export class EventsService {
       throw new NotFoundException('Evento não encontrado');
     }
     return event;
+  }
+
+  async findByExternalId(externalId: string) {
+    const event = await this.prisma.event.findUnique({
+      where: { externalId },
+    });
+    return event; // Retorna null se não encontrar, para a validação no TM
   }
 
   async findByCreatorId(creatorId: string) {

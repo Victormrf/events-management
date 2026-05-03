@@ -16,6 +16,7 @@ import { TicketmasterService } from 'src/ticketmaster/ticketmaster.service';
 @Controller('geocoding')
 export class GeocodingController {
   private readonly logger = new Logger(GeocodingController.name);
+  private readonly MIN_EVENTS_THRESHOLD = 5;
 
   constructor(
     private readonly geocodingService: GeocodingService,
@@ -133,53 +134,44 @@ export class GeocodingController {
   ) {
     if (!city) throw new BadRequestException('Cidade é obrigatória.');
 
-    this.logger.log(`[NEARBY] Verificando eventos existentes em ${city}...`);
+    this.logger.log(`[NEARBY] Processando busca agregada para: ${city}`);
 
-    let cityEvents = [];
-
+    // 1. Tentar Banco de Dados Local (Pega o que já existe, real ou IA)
+    let currentEvents = [];
     try {
-      cityEvents = await this.eventsService.findAllByCity(city);
-    } catch (error) {
-      this.logger.warn(
-        `[NEARBY] Nenhum evento real encontrado em ${city} (Service retornou: ${error.message}).`,
-      );
-      cityEvents = [];
+      currentEvents = await this.eventsService.findAllByCity(city);
+    } catch (e) {
+      currentEvents = [];
     }
 
-    try {
-      if (cityEvents && cityEvents.length > 0) {
-        this.logger.log(
-          `[NEARBY] Encontrados ${cityEvents.length} eventos existentes.`,
-        );
-        return cityEvents;
-      }
-
-      this.logger.log(
-        `[NEARBY] Sem eventos cadastrados em ${city}. Buscando no Ticketmaster...`,
-      );
+    // 2. Se temos menos que o limite, tentamos o Ticketmaster para buscar eventos REAIS externos
+    if (currentEvents.length < this.MIN_EVENTS_THRESHOLD) {
+      this.logger.log(`[NEARBY] Poucos eventos (${currentEvents.length}). Buscando no Ticketmaster...`);
       
       const tmEvents = await this.ticketmasterService.getEventsFromTicketmaster(city, state, country);
       
-      if (tmEvents && tmEvents.length > 0) {
-        this.logger.log(`[NEARBY] Encontrados e salvos ${tmEvents.length} eventos do Ticketmaster.`);
-        return tmEvents;
+      if (tmEvents.length > 0) {
+        currentEvents = await this.eventsService.findAllByCity(city);
       }
-
-      this.logger.log(
-        `[NEARBY] Nenhum evento do Ticketmaster encontrado. Iniciando geração por IA...`,
-      );
-      return await this.aiSeedService.seedEventsForLocation(
-        city,
-        state,
-        country,
-      );
-    } catch (error) {
-      this.logger.error(
-        `Erro crítico ao processar busca nearby: ${error.message}`,
-      );
-      throw new BadRequestException(
-        'Erro interno ao buscar ou gerar eventos para esta região.',
-      );
     }
+
+    // 3. Se após o Ticketmaster ainda não atingimos o mínimo, a IA entra para completar o gap
+    if (currentEvents.length < this.MIN_EVENTS_THRESHOLD) {
+      const neededCount = this.MIN_EVENTS_THRESHOLD - currentEvents.length;
+      
+      this.logger.log(`[NEARBY] Ainda abaixo do limite. IA gerando ${neededCount} eventos para completar.`);
+      
+      const aiEvents = await this.aiSeedService.seedEventsForLocation(
+        city, 
+        state, 
+        country, 
+        neededCount
+      );
+      
+      
+      currentEvents = [...currentEvents, ...aiEvents];
+    }
+
+    return currentEvents;
   }
 }

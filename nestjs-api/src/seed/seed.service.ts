@@ -87,11 +87,11 @@ export class AiSeedService {
     throw new Error('Nenhum modelo disponível aceitou a requisição.');
   }
 
-  async seedEventsForLocation(city: string, state: string, country: string) {
+  async seedEventsForLocation(city: string, state: string, country: string, count: number = 5) {
     let eventsData;
 
     try {
-      const prompt = `Gere um array JSON com 5 eventos fictícios realistas para ${city}, ${state}, ${country}.
+      const prompt = `Gere um array JSON com ${count} eventos fictícios realistas para ${city}, ${state}, ${country}.
       Use nomes de ruas reais. Retorne um JSON puro: [{"title": "...", "description": "...", "street": "...", "category": "tech ou music ou food ou party ou culture"}]`;
 
       const rawResponse = await this.tryGenerateWithFallbackModels(prompt);

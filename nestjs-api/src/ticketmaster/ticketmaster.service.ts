@@ -31,6 +31,13 @@ export class TicketmasterService {
 
       for (const tmEvent of rawEvents) {
         try {
+          // Verifica duplicidade usando o id do TM
+          const existingEvent = await this.eventsService.findByExternalId(tmEvent.id);
+          if (existingEvent) {
+            this.logger.debug(`Evento ${tmEvent.id} já existe no banco. Pulando...`);
+            continue;
+          }
+
           // Mapper
           const venue = tmEvent._embedded?.venues?.[0];
           
@@ -53,7 +60,7 @@ export class TicketmasterService {
           const imageUrl = tmEvent.images.find(img => img.ratio === '16_9')?.url || tmEvent.images[0].url;
           const systemCreatorId = 'c7309829-6500-445b-a3b5-bc48db4cd8e3';
 
-          const newEvent = await this.eventsService.create(eventData as any, systemCreatorId, imageUrl);
+          const newEvent = await this.eventsService.create(eventData as any, systemCreatorId, imageUrl, tmEvent.id);
           processedEvents.push(newEvent);
         } catch (err) {
           this.logger.error(`Erro ao processar evento individual do TM: ${err.message}`);
