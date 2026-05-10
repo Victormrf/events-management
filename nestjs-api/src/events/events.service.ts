@@ -48,12 +48,21 @@ export class EventsService {
       ]);
     }
 
-    const coords = await this.geocodingService.getCoordinates({
+    let coords = await this.geocodingService.getCoordinates({
       street: addressObject.street,
       city: addressObject.city,
       state: addressObject.state,
       country: addressObject.country,
     });
+
+    if (!coords) {
+      coords = await this.geocodingService.getCoordinates({
+        street: '',
+        city: addressObject.city,
+        state: addressObject.state,
+        country: addressObject.country,
+      });
+    }
 
     return this.prisma.event.create({
       data: {

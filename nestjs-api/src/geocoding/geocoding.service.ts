@@ -11,7 +11,8 @@ export class GeocodingService {
     state: string;
     country: string;
   }): Promise<{ lat: number; lng: number } | null> {
-    const query = `${address.street}, ${address.city}, ${address.state}, ${address.country}`;
+    const queryParts = [address.street, address.city, address.state, address.country].filter(Boolean);
+    const query = queryParts.join(', ');
     const url = `${this.baseUrl}/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
 
     try {
@@ -81,7 +82,6 @@ export class GeocodingService {
     this.logger.debug(`Consultando Nominatim em: ${url}`);
 
     try {
-      // Verificamos se o fetch existe (para Node < 18)
       if (typeof fetch === 'undefined') {
         throw new Error(
           'Global fetch não está disponível. Por favor, use Node 18+ ou instale o node-fetch.',
@@ -90,7 +90,7 @@ export class GeocodingService {
 
       const response = await fetch(url, {
         headers: {
-          'User-Agent': 'XploreHub-App-NestJS-v2', // Alterado para garantir exclusividade
+          'User-Agent': 'XploreHub-App-NestJS-v2',
           Accept: 'application/json',
         },
       });
