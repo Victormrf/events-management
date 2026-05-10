@@ -31,6 +31,7 @@ export function CreateEventForm() {
     const payload = {
       ...data,
       date: new Date(data.date).toISOString(),
+      image: data.image && data.image.length > 0 ? data.image[0] : undefined,
     };
 
     const newEvent = await mutate(payload);
@@ -136,7 +137,7 @@ export function CreateEventForm() {
                   {...register("maxAttendees", {
                     required: "Número máximo é obrigatório",
                     min: { value: 1, message: "Mínimo 1 participante" },
-                    valueAsNumber: true, // Garante que o input seja tratado como number
+                    valueAsNumber: true,
                   })}
                   placeholder="100"
                   className={errors.maxAttendees ? "border-destructive" : ""}

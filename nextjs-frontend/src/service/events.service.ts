@@ -1,15 +1,15 @@
 import { CreateEventPayload, Event } from "@/types/event";
 
 const serializeEventData = (
-  payload: CreateEventPayload & { image?: File | null },
+  payload: Partial<CreateEventPayload> & { image?: File | null },
   formData: FormData,
 ) => {
-  formData.append("title", payload.title);
-  formData.append("description", payload.description);
-  formData.append("date", payload.date);
-  formData.append("maxAttendees", String(payload.maxAttendees));
-  formData.append("price", String(payload.price));
-  formData.append("address", JSON.stringify(payload.address));
+  if (payload.title !== undefined) formData.append("title", payload.title);
+  if (payload.description !== undefined) formData.append("description", payload.description);
+  if (payload.date !== undefined) formData.append("date", payload.date);
+  if (payload.maxAttendees !== undefined) formData.append("maxAttendees", String(payload.maxAttendees));
+  if (payload.price !== undefined) formData.append("price", String(payload.price));
+  if (payload.address !== undefined) formData.append("address", JSON.stringify(payload.address));
   if (payload.image) {
     formData.append("image", payload.image);
   }
@@ -84,10 +84,7 @@ export const updateEvent = async (
   payload: Partial<CreateEventPayload> & { image?: File | null },
 ): Promise<Event> => {
   const formData = new FormData();
-  serializeEventData(
-    payload as CreateEventPayload & { image?: File | null },
-    formData,
-  );
+  serializeEventData(payload, formData);
 
   const response = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/events/${eventId}`,

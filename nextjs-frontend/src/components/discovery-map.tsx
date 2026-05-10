@@ -157,7 +157,7 @@ export default function DiscoveryMap({
         event.address.lat,
         event.address.lng,
       );
-      return dist <= 10;
+      return dist <= 20;
     });
   }, [localEvents, referenceLocation]);
 
@@ -170,7 +170,7 @@ export default function DiscoveryMap({
         (e) =>
           e.address.lat &&
           e.address.lng &&
-          calculateDistance(lat, lng, e.address.lat, e.address.lng) <= 10,
+          calculateDistance(lat, lng, e.address.lat, e.address.lng) <= 20,
       );
 
       if (hasNearby || isSeeding) {
@@ -265,7 +265,7 @@ export default function DiscoveryMap({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Painel do Mapa */}
         <div className="md:col-span-2 space-y-4">
-          <div className="relative h-[55vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-2xl border border-slate-800 shadow-xl">
+          <div className="relative z-0 h-[55vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-2xl border border-slate-800 shadow-xl">
             <MapContainer
               center={referenceLocation}
               zoom={13}
@@ -279,7 +279,7 @@ export default function DiscoveryMap({
 
               <Circle
                 center={referenceLocation}
-                radius={10000}
+                radius={20000}
                 pathOptions={{
                   color: "#5dd9c1",
                   fillColor: "#5dd9c1",
@@ -319,7 +319,7 @@ export default function DiscoveryMap({
             <Info className="h-5 w-5 shrink-0" />
             <span className="text-sm text-foreground font-medium">
               {nearbyEvents.length > 0
-                ? `Encontramos ${nearbyEvents.length} eventos no raio de 10km.`
+                ? `Encontramos ${nearbyEvents.length} eventos no raio de 20km.`
                 : "Nenhum evento encontrado. Tente buscar uma nova área."}
             </span>
           </div>

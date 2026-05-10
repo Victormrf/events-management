@@ -60,6 +60,7 @@ export interface EditFormData {
     country: string;
     zipCode: string;
   };
+  image?: FileList | null;
 }
 
 export interface EventDetailsModalProps {

@@ -9,7 +9,7 @@ import {
 import { CreateEventPayload, Event } from "@/types/event";
 import { useCallback, useEffect, useState } from "react";
 
-type EventMutationPayload = CreateEventPayload & { image: FileList | null };
+type EventMutationPayload = CreateEventPayload & { image?: File | null };
 
 export function useEvents() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -97,10 +97,9 @@ export function useCreateEvent() {
 
     try {
       const { image, ...eventData } = payload;
-      const imageFile = image ? image[0] : null;
       const newEvent = await createEvent(token, {
         ...eventData,
-        image: imageFile,
+        image: image || null,
       });
 
       console.log("Novo ecentro criado:", newEvent);
@@ -143,12 +142,11 @@ export function useUpdateEvent() {
 
     try {
       const { image, ...eventData } = payload;
-      const imageFile = image ? image[0] : undefined;
 
       const updatedEvent = await updateEvent(token, eventId, {
         ...eventData,
-        image: imageFile,
-      } as Partial<CreateEventPayload> & { image?: File | undefined });
+        image: image || null,
+      } as Partial<CreateEventPayload> & { image?: File | null });
 
       setSuccess(true);
       return updatedEvent;
