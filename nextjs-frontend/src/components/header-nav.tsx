@@ -1,16 +1,18 @@
 "use client";
 
 import { useAuth } from "@/context/auth-provider";
+import { useLanguage } from "@/context/language-provider";
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { MapPin, Star } from "lucide-react";
 
 export function HeaderNav() {
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [isEventsOpen, setIsEventsOpen] = useState(false);
   const eventsRef = useRef<HTMLDivElement>(null);
 
-  // Fechar popup quando clicar fora
+  // Close popup when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -38,7 +40,7 @@ export function HeaderNav() {
               onClick={() => setIsEventsOpen(!isEventsOpen)}
               className="text-sm font-medium hover:text-primary transition-colors"
             >
-              Events
+              {t.nav.events}
             </button>
 
             {isEventsOpen && (
@@ -50,7 +52,7 @@ export function HeaderNav() {
                 >
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">
-                    Discover experiences around you
+                    {t.nav.discoverExperiences}
                   </span>
                 </Link>
                 <Link
@@ -60,7 +62,7 @@ export function HeaderNav() {
                 >
                   <Star className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium">
-                    Browse through the most viewed events
+                    {t.nav.browseEvents}
                   </span>
                 </Link>
               </div>
@@ -71,19 +73,19 @@ export function HeaderNav() {
             href="/create-event"
             className="text-sm font-medium hover:text-primary transition-colors"
           >
-            Create Event
+            {t.nav.createEvent}
           </Link>
           <Link
             href="/my-events"
             className="text-sm font-medium hover:text-primary transition-colors"
           >
-            My Events
+            {t.nav.myEvents}
           </Link>
           <Link
             href="/my-registrations"
             className="text-sm font-medium hover:text-primary transition-colors"
           >
-            My Registrations
+            {t.nav.myRegistrations}
           </Link>
         </>
       )}

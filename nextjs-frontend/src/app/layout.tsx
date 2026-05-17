@@ -6,6 +6,7 @@ import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { AuthProvider } from "@/context/auth-provider";
+import { LanguageProvider } from "@/context/language-provider";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
@@ -30,13 +31,15 @@ html {
         `}</style>
       </head>
       <body className="min-h-screen flex flex-col">
-        <AuthProvider>
-          <Header />
-          <main className="flex-1">
-            {children} <Toaster />
-          </main>
-          <Footer />
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider>
+            <Header />
+            <main className="flex-1">
+              {children} <Toaster />
+            </main>
+            <Footer />
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

@@ -1,7 +1,12 @@
+"use client";
+
 import { Github, Mail, Linkedin } from "lucide-react";
 import Image from "next/image";
+import { useLanguage } from "@/context/language-provider";
 
 export function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="border-t bg-muted/50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -18,13 +23,13 @@ export function Footer() {
               <span className="font-bold text-primary">XploreHub</span>
             </div>
             <p className="text-sm text-muted-foreground">
-              Discover and manage amazing events in your area.
+              {t.footer.tagline}
             </p>
           </div>
 
           {/* Social */}
           <div className="space-y-4 md:text-right md:items-end flex flex-col">
-            <h4 className="font-semibold text-secondary">Connect</h4>
+            <h4 className="font-semibold text-secondary">{t.footer.connect}</h4>
             <div className="flex gap-2">
               <a
                 href="https://www.linkedin.com/in/victor-manuel-fernandes/"
@@ -49,7 +54,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 Victor Fernandes. All rights reserved.</p>
+          <p>{t.footer.rights}</p>
         </div>
       </div>
     </footer>

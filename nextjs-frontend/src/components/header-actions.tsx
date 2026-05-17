@@ -3,10 +3,13 @@
 import { Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { useAuth } from "@/context/auth-provider";
+import { useLanguage } from "@/context/language-provider";
+import { LanguageToggle } from "./language-toggle";
 import Link from "next/link";
 
 export function HeaderActions() {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
+  const { t } = useLanguage();
 
   const handleLogout = () => {
     logout();
@@ -18,26 +21,27 @@ export function HeaderActions() {
 
   return (
     <div className="flex items-center gap-2">
+      {/* Language toggle — always visible */}
+      <LanguageToggle />
+
       {isAuthenticated && user ? (
-        // Mostra o nome do usuário e um botão de logout se estiver autenticado
         <>
           <span className="hidden sm:flex text-sm font-medium">
-            Olá, {user.name}
+            {t.auth.hello}, {user.name}
           </span>
           <Button
             onClick={handleLogout}
             variant="outline"
             className="hidden sm:flex bg-transparent"
           >
-            Log out
+            {t.auth.logout}
           </Button>
         </>
       ) : (
-        // Mostra os botões de login e registro se não estiver autenticado
         <>
           <Link href="/login">
             <Button variant="outline" className="hidden sm:flex bg-transparent">
-              Log in / Sign up
+              {t.auth.loginSignup}
             </Button>
           </Link>
         </>

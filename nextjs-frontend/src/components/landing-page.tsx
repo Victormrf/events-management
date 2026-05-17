@@ -1,37 +1,41 @@
+"use client";
+
 import React from "react";
 import { MapPin, Star, Plus, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/context/language-provider";
 
 export default function LandingPage() {
+  const { t } = useLanguage();
+  const l = t.landing;
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 text-primary-100 overflow-hidden relative font-sans">
-      {/* Elementos Decorativos de Fundo (Glows/Brilhos) */}
+      {/* Background Decorative Glows */}
       <div className="absolute top-1/4 -left-20 w-96 h-96 bg-foreground/10 rounded-full blur-[120px] pointer-events-none"></div>
       <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
 
       <div className="max-w-5xl w-full space-y-12 relative z-10">
-        {/* Cabeçalho de Boas-vindas */}
+        {/* Welcome Header */}
         <div className="text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-foreground/10 border border-foreground/20 text-foreground text-xs font-bold uppercase tracking-widest animate-pulse">
             <Sparkles className="h-3.3 w-3.3" />
-            Bem-vindo ao XploreHub
+            {l.badge}
           </div>
           <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-primary leading-tight">
-            Sua próxima experiência <br className="hidden md:block" /> começa
-            aqui.
+            {l.headline}
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
-            Descubra eventos locais, explore destaques exclusivos ou crie seu
-            próprio momento inesquecível com a nossa comunidade.
+            {l.subheadline}
           </p>
         </div>
 
-        {/* Grade de Opções Principais */}
+        {/* Main Options Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Opção 1: Encontrar Eventos Próximos (Ícone MapPin atualizado) */}
+          {/* Option 1: Find Nearby Events */}
           <Link href="/discovery" className="group block h-full">
             <div className="relative h-full p-10 rounded-[2.5rem] border border-slate-800 bg-background/40 backdrop-blur-2xl hover:border-foreground/50 transition-all duration-500 shadow-2xl overflow-hidden flex flex-col justify-between">
-              {/* Ícone de Fundo Decorativo */}
+              {/* Decorative BG Icon */}
               <div className="absolute -top-4 -right-4 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:rotate-12 duration-700">
                 <MapPin size={160} className="text-foreground" />
               </div>
@@ -42,25 +46,24 @@ export default function LandingPage() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-2xl md:text-3xl font-bold text-foreground">
-                    Encontre eventos próximos a você
+                    {l.findEventsTitle}
                   </h3>
                   <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                    Utilize nosso mapa interativo e geolocalização para
-                    descobrir experiências em um raio de 10km.
+                    {l.findEventsDesc}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 text-foreground text-sm font-bold pt-6 group-hover:gap-4 transition-all">
-                Explorar Mapa <ArrowRight className="h-4 w-4" />
+                {l.exploreMap} <ArrowRight className="h-4 w-4" />
               </div>
             </div>
           </Link>
 
-          {/* Opção 2: Eventos em Destaque */}
+          {/* Option 2: Featured Events */}
           <Link href="/events" className="group block h-full">
             <div className="relative h-full p-10 rounded-[2.5rem] border border-slate-800 bg-background/40 backdrop-blur-2xl hover:border-primary/50 transition-all duration-500 shadow-2xl overflow-hidden flex flex-col justify-between">
-              {/* Ícone de Fundo Decorativo */}
+              {/* Decorative BG Icon */}
               <div className="absolute -top-4 -right-4 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:rotate-12 duration-700">
                 <Star size={160} className="text-primary" />
               </div>
@@ -71,27 +74,26 @@ export default function LandingPage() {
                 </div>
                 <div className="space-y-2">
                   <h3 className="text-2xl md:text-3xl font-bold text-primary/80">
-                    Visualize os eventos em destaque
+                    {l.featuredTitle}
                   </h3>
                   <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
-                    Confira a seleção curada dos eventos mais populares e
-                    recomendados por nossa comunidade global.
+                    {l.featuredDesc}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 text-primary text-sm font-bold pt-6 group-hover:gap-4 transition-all">
-                Ver Destaques <ArrowRight className="h-4 w-4" />
+                {l.viewHighlights} <ArrowRight className="h-4 w-4" />
               </div>
             </div>
           </Link>
         </div>
 
-        {/* Opção 3: Criar Evento (Ícone Plus atualizado para estilo limpo) */}
+        {/* Option 3: Create Event */}
         <div className="flex justify-center pt-6">
           <Link href="/create-event" className="group w-full max-w-3xl">
             <div className="relative p-8 rounded-[2rem] border border-slate-800 bg-gradient-to-br from-slate-900/90 to-slate-900/30 backdrop-blur-xl hover:border-foreground/30 transition-all duration-300 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 group">
-              {/* Brilho interno sutil */}
+              {/* Subtle inner glow */}
               <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem]"></div>
 
               <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
@@ -100,18 +102,17 @@ export default function LandingPage() {
                 </div>
                 <div className="text-center md:text-left">
                   <h4 className="font-bold text-xl text-foreground mb-1">
-                    Quer organizar seu próprio evento?
+                    {l.organizeTitle}
                   </h4>
                   <p className="text-muted-foreground text-sm">
-                    Transforme sua ideia em realidade e conecte-se com pessoas
-                    próximas em minutos.
+                    {l.organizeDesc}
                   </p>
                 </div>
               </div>
 
               <div className="relative z-10">
                 <button className="px-8 py-3.5 rounded-2xl bg-primary text-white font-black text-sm uppercase tracking-wider hover:bg-primary/80 hover:scale-105 transition-all shadow-xl shadow-black/20">
-                  Começar Agora
+                  {l.startNow}
                 </button>
               </div>
             </div>
