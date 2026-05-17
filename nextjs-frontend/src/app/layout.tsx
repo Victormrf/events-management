@@ -10,8 +10,13 @@ import { LanguageProvider } from "@/context/language-provider";
 import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
-  title: "Events Manager",
-  description: "Manage and discover amazing events",
+  title: "XploreHub",
+  description: "Discover and manage amazing events near you",
+  icons: {
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
+    shortcut: "/icon.png",
+  },
 };
 
 export default function RootLayout({
@@ -22,6 +27,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+        <link rel="icon" href="/icon.png?v=2" type="image/png" />
+        <link rel="apple-touch-icon" href="/apple-icon.png?v=2" />
+        <link rel="shortcut icon" href="/icon.png?v=2" type="image/png" />
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};

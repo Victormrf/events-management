@@ -93,7 +93,7 @@ export default function PaymentPage() {
           {/* --- Formulário de Pagamento --- */}
           <form
             onSubmit={handleSubmit}
-            className="w-full rounded-lg border p-4 shadow-sm border-gray-700 bg-card sm:p-6 lg:max-w-xl lg:p-8"
+            className="w-full rounded-lg border p-4 shadow-sm border-border bg-card sm:p-6 lg:max-w-xl lg:p-8"
           >
             <div className="mb-6 grid grid-cols-2 gap-4">
               <div className="col-span-2">
@@ -103,7 +103,7 @@ export default function PaymentPage() {
                 <input
                   type="text"
                   id="full_name"
-                  className="mt-2 block w-full rounded-lg border p-2.5 text-sm focus:border-primary-500 focus:ring-primary-500 border-slate-700 bg-slate-900 text-white placeholder:text-gray-400 focus:border-primary-500 focus:ring-primary-500"
+                  className="mt-2 block w-full rounded-lg border p-2.5 text-sm focus:border-primary focus:ring-primary border-border bg-input text-foreground placeholder:text-muted-foreground"
                   placeholder="Bonnie Green"
                   required
                 />
@@ -133,7 +133,7 @@ export default function PaymentPage() {
                 <input
                   type="text"
                   id="card-number-input"
-                  className="mt-2 block w-full rounded-lg border border-primary-700 bg-slate-900 p-2.5 pe-10 text-sm text-white focus:border-primary focus:ring-primary placeholder:text-gray-400"
+                  className="mt-2 block w-full rounded-lg border border-border bg-input p-2.5 pe-10 text-sm text-foreground focus:border-primary focus:ring-primary placeholder:text-muted-foreground"
                   placeholder="xxxx-xxxx-xxxx-xxxx"
                   pattern={CARD_PATTERNS[cardBrand]}
                   title={`Please enter a valid ${cardBrand} card number.`}
@@ -146,7 +146,7 @@ export default function PaymentPage() {
                 <input
                   id="card-expiration-input"
                   type="text"
-                  className="mt-2 block w-full rounded-lg border border-primary-700 bg-slate-900 p-2.5 text-sm text-white focus:border-primary-500 focus:ring-primary-500 placeholder:text-gray-400"
+                  className="mt-2 block w-full rounded-lg border border-border bg-input p-2.5 text-sm text-foreground focus:border-primary focus:ring-primary placeholder:text-muted-foreground"
                   placeholder="MM/YY"
                   required
                 />
@@ -157,7 +157,7 @@ export default function PaymentPage() {
                 <input
                   type="number"
                   id="cvv-input"
-                  className="mt-2 block w-full rounded-lg border border-primary-700 bg-slate-900 p-2.5 text-sm text-white focus:border-primary-500 focus:ring-primary-500 placeholder:text-gray-400"
+                  className="mt-2 block w-full rounded-lg border border-border bg-input p-2.5 text-sm text-foreground focus:border-primary focus:ring-primary placeholder:text-muted-foreground"
                   placeholder="•••"
                   required
                 />
@@ -175,13 +175,13 @@ export default function PaymentPage() {
           {/* --- Resumo do Pedido (Sidebar) --- */}
           {orderSummary.totalPrice && (
             <div className="mt-6 grow sm:mt-8 lg:mt-0">
-              <div className="space-y-4 rounded-lg border p-6 border-gray-700 bg-card">
+              <div className="space-y-4 rounded-lg border p-6 border-border bg-card">
                 <div className="space-y-2">
                   <dl className="flex items-center justify-between gap-4">
                     <dt className="text-base font-normal text-foreground whitespace-nowrap">
                       Individual price
                     </dt>
-                    <dd className="text-sm font-medium text-white whitespace-nowrap">
+                    <dd className="text-sm font-medium text-foreground whitespace-nowrap">
                       {`R$ ${orderSummary.individualPrice?.toLocaleString(
                         "pt-BR",
                         {
@@ -194,7 +194,7 @@ export default function PaymentPage() {
                     <dt className="text-base font-normal text-foreground whitespace-nowrap">
                       Quantity
                     </dt>
-                    <dd className="text-base font-medium text-white">
+                    <dd className="text-base font-medium text-foreground">
                       {orderSummary.quantity}
                     </dd>
                   </dl>
@@ -203,7 +203,7 @@ export default function PaymentPage() {
                   <dt className="text-base font-bold text-foreground whitespace-nowrap">
                     Total price
                   </dt>
-                  <dd className="text-base font-bold text-white">
+                  <dd className="text-base font-bold text-foreground">
                     {`R$ ${orderSummary.totalPrice.toLocaleString("pt-BR", {
                       minimumFractionDigits: 2,
                     })}`}

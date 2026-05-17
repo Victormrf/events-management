@@ -34,7 +34,7 @@ export default function LandingPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Option 1: Find Nearby Events */}
           <Link href="/discovery" className="group block h-full">
-            <div className="relative h-full p-10 rounded-[2.5rem] border border-slate-800 bg-background/40 backdrop-blur-2xl hover:border-foreground/50 transition-all duration-500 shadow-2xl overflow-hidden flex flex-col justify-between">
+            <div className="relative h-full p-10 rounded-[2.5rem] border border-border bg-background/40 backdrop-blur-2xl hover:border-foreground/50 transition-all duration-500 shadow-2xl overflow-hidden flex flex-col justify-between">
               {/* Decorative BG Icon */}
               <div className="absolute -top-4 -right-4 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:rotate-12 duration-700">
                 <MapPin size={160} className="text-foreground" />
@@ -62,7 +62,7 @@ export default function LandingPage() {
 
           {/* Option 2: Featured Events */}
           <Link href="/events" className="group block h-full">
-            <div className="relative h-full p-10 rounded-[2.5rem] border border-slate-800 bg-background/40 backdrop-blur-2xl hover:border-primary/50 transition-all duration-500 shadow-2xl overflow-hidden flex flex-col justify-between">
+            <div className="relative h-full p-10 rounded-[2.5rem] border border-border bg-background/40 backdrop-blur-2xl hover:border-primary/50 transition-all duration-500 shadow-2xl overflow-hidden flex flex-col justify-between">
               {/* Decorative BG Icon */}
               <div className="absolute -top-4 -right-4 p-8 opacity-5 group-hover:opacity-10 transition-opacity transform group-hover:rotate-12 duration-700">
                 <Star size={160} className="text-primary" />
@@ -92,13 +92,13 @@ export default function LandingPage() {
         {/* Option 3: Create Event */}
         <div className="flex justify-center pt-6">
           <Link href="/create-event" className="group w-full max-w-3xl">
-            <div className="relative p-8 rounded-[2rem] border border-slate-800 bg-gradient-to-br from-slate-900/90 to-slate-900/30 backdrop-blur-xl hover:border-foreground/30 transition-all duration-300 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 group">
+            <div className="relative p-8 rounded-[2rem] border border-border bg-gradient-to-br from-card/90 to-card/30 backdrop-blur-xl hover:border-foreground/30 transition-all duration-300 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 group">
               {/* Subtle inner glow */}
               <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity rounded-[2rem]"></div>
 
               <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-foreground/20 border border-foreground/30 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.1)] group-hover:bg-foreground transition-all duration-500">
-                  <Plus className="h-8 w-8 text-foreground group-hover:text-[#020617] group-hover:rotate-90 transition-all duration-500" />
+                <div className="w-16 h-16 rounded-2xl bg-foreground/20 border border-foreground/30 flex items-center justify-center shadow-[0_0_30px_rgba(124,58,237,0.15)] group-hover:bg-foreground transition-all duration-500">
+                  <Plus className="h-8 w-8 text-foreground group-hover:text-background group-hover:rotate-90 transition-all duration-500" />
                 </div>
                 <div className="text-center md:text-left">
                   <h4 className="font-bold text-xl text-foreground mb-1">

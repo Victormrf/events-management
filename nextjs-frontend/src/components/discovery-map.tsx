@@ -105,8 +105,8 @@ export default function DiscoveryMap({
     setIsClient(true);
 
     import("leaflet").then((L) => {
-      const pinSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='36' height='48' viewBox='0 0 24 24' fill='none' stroke='#064E3B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z' fill='#5dd9c1' stroke='#064E3B'/><circle cx='12' cy='10' r='3' fill='white'/></svg>`;
-      const userSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='#ff206e' opacity='0.2'/><circle cx='12' cy='12' r='5' fill='#ff206e'/><circle cx='12' cy='12' r='2.5' fill='white'/></svg>`;
+      const pinSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='36' height='48' viewBox='0 0 24 24' fill='none' stroke='#3b0764' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z' fill='#7c3aed' stroke='#3b0764'/><circle cx='12' cy='10' r='3' fill='white'/></svg>`;
+      const userSvg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8' fill='#a78bfa' opacity='0.25'/><circle cx='12' cy='12' r='5' fill='#7c3aed'/><circle cx='12' cy='12' r='2.5' fill='white'/></svg>`;
 
       setMapIcon(
         L.icon({
@@ -228,7 +228,7 @@ export default function DiscoveryMap({
     !referenceLocation
   ) {
     return (
-      <div className="flex h-[60vh] w-full flex-col items-center justify-center rounded-2xl border bg-slate-900/10">
+      <div className="flex h-[60vh] w-full flex-col items-center justify-center rounded-2xl border bg-card/30">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
         <p className="mt-4 text-sm font-medium text-muted-foreground">
           Iniciando sistemas de mapeamento...
@@ -243,20 +243,20 @@ export default function DiscoveryMap({
 
       {/* Overlay de carregamento da IA */}
       {isSeeding && (
-        <div className="absolute inset-0 z-[1000] flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-sm rounded-2xl animate-in fade-in duration-300">
-          <div className="bg-slate-900 p-8 rounded-3xl border border-emerald-500/20 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm mx-4">
-            <Sparkles className="h-12 w-12 text-foreground animate-pulse" />
+        <div className="absolute inset-0 z-[1000] flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-2xl animate-in fade-in duration-300">
+          <div className="bg-card p-8 rounded-3xl border border-primary/20 shadow-2xl flex flex-col items-center gap-4 text-center max-w-sm mx-4">
+            <Sparkles className="h-12 w-12 text-primary animate-pulse" />
             <div className="space-y-1">
-              <h3 className="text-xl font-bold text-white">
+              <h3 className="text-xl font-bold text-foreground">
                 Gerando Experiências
               </h3>
-              <p className="text-slate-400 text-xs">
+              <p className="text-muted-foreground text-xs">
                 Não encontramos eventos por aqui. Nossa IA está povoando a
                 região com eventos fictícios realistas...
               </p>
             </div>
-            <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-foreground h-full w-1/2 animate-[shimmer_2s_infinite] origin-left"></div>
+            <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+              <div className="bg-primary h-full w-1/2 animate-[shimmer_2s_infinite] origin-left"></div>
             </div>
           </div>
         </div>
@@ -265,7 +265,7 @@ export default function DiscoveryMap({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Painel do Mapa */}
         <div className="md:col-span-2 space-y-4">
-          <div className="relative z-0 h-[55vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-2xl border border-slate-800 shadow-xl">
+          <div className="relative z-0 h-[55vh] md:h-[70vh] lg:h-[80vh] w-full overflow-hidden rounded-2xl border border-border shadow-xl">
             <MapContainer
               center={referenceLocation}
               zoom={13}
@@ -281,8 +281,8 @@ export default function DiscoveryMap({
                 center={referenceLocation}
                 radius={20000}
                 pathOptions={{
-                  color: "#5dd9c1",
-                  fillColor: "#5dd9c1",
+                  color: "#6366f1",
+                  fillColor: "#6366f1",
                   fillOpacity: 0.05,
                   weight: 1,
                   dashArray: "10, 15",
@@ -314,7 +314,7 @@ export default function DiscoveryMap({
           </div>
 
           <div
-            className={`flex items-center gap-3 p-4 rounded-xl border transition-colors ${nearbyEvents.length > 0 ? "bg-emerald-500/5 border-emerald-500/20 text-foreground" : "bg-slate-800 border-slate-700 text-slate-400"}`}
+            className={`flex items-center gap-3 p-4 rounded-xl border transition-colors ${nearbyEvents.length > 0 ? "bg-primary/5 border-primary/20 text-foreground" : "bg-muted border-border text-muted-foreground"}`}
           >
             <Info className="h-5 w-5 shrink-0" />
             <span className="text-sm text-foreground font-medium">
@@ -342,7 +342,7 @@ export default function DiscoveryMap({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cidade ou endereço..."
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-foreground outline-none transition-all text-white"
+                  className="flex-1 bg-input border border-border rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary outline-none transition-all text-foreground"
                 />
                 <button
                   type="submit"
@@ -359,7 +359,7 @@ export default function DiscoveryMap({
               <button
                 type="button"
                 onClick={resetToMyLocation}
-                className="w-full text-md text-slate-500 hover:text-primary transition-colors flex items-center justify-center gap-1"
+                className="w-full text-md text-muted-foreground hover:text-primary transition-colors flex items-center justify-center gap-1"
               >
                 <MapPin className="h-3 w-3" /> Usar minha posição atual
               </button>
@@ -375,14 +375,14 @@ export default function DiscoveryMap({
           <div className="flex-1 rounded-2xl border p-5 bg-card shadow-lg overflow-y-auto min-h-[300px] max-h-[600px] lg:max-h-[65vh]">
             {!selectedEvent ? (
               <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-40 py-12">
-                <div className="p-5 rounded-full bg-slate-800">
-                  <MapPin className="h-10 w-10 text-slate-500" />
+                <div className="p-5 rounded-full bg-muted">
+                  <MapPin className="h-10 w-10 text-muted-foreground" />
                 </div>
                 <div className="space-y-1">
-                  <p className="font-bold text-slate-300">
+                  <p className="font-bold text-foreground">
                     Nenhum evento selecionado
                   </p>
-                  <p className="text-xs text-slate-500 max-w-[180px] mx-auto">
+                  <p className="text-xs text-muted-foreground max-w-[180px] mx-auto">
                     Clique em um marcador no mapa para ver os detalhes completos
                     aqui.
                   </p>
